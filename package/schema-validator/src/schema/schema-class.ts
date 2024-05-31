@@ -1,22 +1,32 @@
+interface Options {
+    isOptional: boolean
+}
+
+type Validation<T> = T
+
 // Base classes for Validation library
 export abstract class BaseModifier {
     optional() {
         return new OptionalModifier(this)
     }
-
-    nullable() {
-        return new NullabeModifier(this)
-    }
 }
 
 export abstract class BaseType extends BaseModifier {
-    constructor() {
+    protected _options?: Options
+
+    // List of rules to be validated
+    protected _validations?: Validation<any>[]
+
+    constructor(options?: Options, validations?: Validation<any>[]) {
         super()
+
+        this._options = options
+        this._validations = validations
     }
 
-    parse<Args>(args: Args) {
-        // Validate the passed value here...
-        return this
+    parse(args: unknown) {
+        // Validate args here...
+        return args
     }
 }
 
@@ -30,18 +40,7 @@ export class OptionalModifier<Schema extends BaseModifier> extends BaseModifier 
     }
 }
 
-export class NullabeModifier<Schema extends BaseModifier> extends BaseModifier {
-    _schema
-
-    constructor(schema: Schema) {
-        super()
-        this._schema = schema
-    }
-}
-
 // Schema implementation which extends the BaseModifier 
-interface Options { }
-
 export class Schema extends BaseType {
     constructor() {
         super()
@@ -51,12 +50,8 @@ export class Schema extends BaseType {
         return new StringSchema()
     }
 
-    number() {
-        return new NumberSchema()
-    }
-
-    object(args: Record<string, BaseModifier>, opts?: Options) {
-        return new ObjectSchema(args, opts)
+    object(args: Record<string, BaseModifier>) {
+        return new ObjectSchema(args)
     }
 }
 
@@ -65,26 +60,35 @@ export class StringSchema extends BaseType {
     constructor() {
         super()
     }
-}
 
-export class NumberSchema extends BaseType {
-    constructor() {
-        super()
+    parse(args: unknown) {
+        return args
     }
 }
 
 export class ObjectSchema extends BaseType {
-    _options
+    _args
 
-    constructor(args: Record<string, BaseModifier>, options?: Options) {
+    constructor(args: Record<string, BaseModifier>) {
         super()
-        this._options = options
+        this._args = args
     }
 
     parse<Args>(args: Args) {
-        return this
+        return args;
     }
 }
 
 const schema = new Schema()
 export default schema;
+
+// Focus on the following first
+// - Base
+// - BaseType
+// - Optional
+// - String
+// - Objects
+//
+// Make sure that all the five classes will be able to communicate properly
+// when being parsed, and when an optional property is given
+// to a certain key or variable

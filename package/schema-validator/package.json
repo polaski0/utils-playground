@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "scripts": {
     "test": "jest",
-    "dev": "ts-node index.ts"
+    "dev": "ts-node index.ts",
+    "ds": "ts-node src/schema/schema-class-1.ts"
   },
   "keywords": [],
   "author": "Meynard",

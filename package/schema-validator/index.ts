@@ -26,13 +26,15 @@
 import schema from "./src/schema/schema-class"
 
 const s = schema.object({
-    "first-name": schema.string().optional(),
-    "last-name": schema.string()
+    first_name: schema.string(),
+    middle_name: schema.string().optional(),
+    last_name: schema.string()
 })
 
 const obj = {
-    "first-name": "John",
-    "last-name": "Doe"
+    first_name: "John",
+    last_name: "Doe"
 }
 
-s.parse(obj)
+console.log("Schema: ", s)
+console.log("Parsed result: ", s.parse(obj))
