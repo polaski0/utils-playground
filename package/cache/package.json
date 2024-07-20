@@ -2,7 +2,7 @@
   "name": "cache",
   "version": "1.0.0",
   "scripts": {
-    "test": "jest",
+    "test": "jest --detectOpenHandles --verbose",
     "dev": "ts-node index.ts"
   },
   "keywords": [],
@@ -10,6 +10,7 @@
   "license": "ISC",
   "description": "In-memory database like Redis",
   "devDependencies": {
+    "@faker-js/faker": "^8.4.1",
     "@types/jest": "^29.5.12",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.3",

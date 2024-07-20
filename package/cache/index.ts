@@ -1,5 +1,6 @@
 type TCacheOptions = {
   /** Standard time-to-live, default option if ttl is not provided during set */
+  isCheckerActive: boolean;
   stdTTL: number;
   checkPeriod: number;
 };
@@ -9,19 +10,23 @@ type TData = {
   ttl: number;
 };
 
+type TDataK = string | number;
+type TDataKArr = string[] | number[];
+
 /**
  * An in-memory cache to allow faster serving of data back
  * to the client.
  */
-export const client = (opts?: TCacheOptions) => {
-  const data: Map<string, TData> = new Map();
+export const client = (opts?: Partial<TCacheOptions>) => {
+  const data: Map<TDataK, TData> = new Map();
   const options: TCacheOptions = {
+    isCheckerActive: true,
     stdTTL: 300,
     checkPeriod: 600,
     ...opts,
   };
 
-  const get = (key: string): any => {
+  const get = (key: TDataK): any => {
     if (data.get(key) && _check(key, data.get(key))) {
       return _unwrap(data.get(key)!);
     }
@@ -34,12 +39,12 @@ export const client = (opts?: TCacheOptions) => {
    * @param value any
    * @param ttl number - In seconds. Assigning 0 means that the lifetime of the value is infinite
    */
-  const set = (key: string, value: any, ttl?: number): void => {
+  const set = (key: TDataK, value: any, ttl?: number): void => {
     data.set(key, _wrap(value, ttl));
   };
 
-  const mget = (keys: string[]) => {
-    const obj: Record<string, any> = {};
+  const mget = (keys: TDataKArr) => {
+    const obj: Record<TDataK, any> = {};
 
     for (const key of keys) {
       if (data.get(key)) {
@@ -50,14 +55,14 @@ export const client = (opts?: TCacheOptions) => {
     return obj;
   };
 
-  const mset = (data: { key: string; value: any }[]) => {
+  const mset = (data: { key: TDataK; value: any }[]) => {
     for (const keyValuePair of data) {
       set(keyValuePair.key, keyValuePair.value);
     }
   };
 
   /** Get the value of the key then delete from the cache */
-  const take = (key: string): any => {
+  const take = (key: TDataK): any => {
     const data = get(key);
     if (data !== undefined) {
       del(key);
@@ -66,12 +71,12 @@ export const client = (opts?: TCacheOptions) => {
   };
 
   /** Check if key exists in cache */
-  const has = (key: string): boolean => {
+  const has = (key: TDataK): boolean => {
     return _check(key, data.get(key)) && data.has(key);
   };
 
   /** Delete key(s) in cache */
-  const del = (keys: string | string[]) => {
+  const del = (keys: TDataK | TDataKArr) => {
     if (keys instanceof Array) {
       for (const key of keys) {
         data.delete(key);
@@ -87,7 +92,7 @@ export const client = (opts?: TCacheOptions) => {
   };
 
   /** Internal checker if the key is still valid based on its ttl. Returns true if valid, otherwise false */
-  const _check = (key: string, value: TData | undefined): boolean => {
+  const _check = (key: TDataK, value: TData | undefined): boolean => {
     if (value === undefined) {
       return false;
     }
@@ -108,9 +113,11 @@ export const client = (opts?: TCacheOptions) => {
       _check(key, data.get(key));
     }
 
-    setTimeout(() => {
-      _checkData();
-    }, options.checkPeriod * 1000);
+    if (options.isCheckerActive) {
+      setTimeout(() => {
+        _checkData();
+      }, options.checkPeriod * 1000);
+    }
   };
 
   /** Internal function to wrap the value provided before setting to cache */
@@ -136,6 +143,14 @@ export const client = (opts?: TCacheOptions) => {
     return data.value;
   };
 
+  const toggleIncrementalCheck = () => {
+    options.isCheckerActive = !options.isCheckerActive;
+
+    if (options.isCheckerActive) {
+      _checkData();
+    }
+  };
+
   // Initialize interval for data checker.
   _checkData();
 
@@ -148,7 +163,6 @@ export const client = (opts?: TCacheOptions) => {
     mget,
     mset,
     del,
+    toggleIncrementalCheck,
   };
 };
-
-export const cache = client();
