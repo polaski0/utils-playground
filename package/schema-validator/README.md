@@ -1,7 +1,10 @@
-# Dependencies
+# Schema Validator
 
-Uninstall the following dependencies once done:
-- vlid
+This is a schema validator based on a JavaScript library called [vlid](https://github.com/vlucas/vlid).
+
+# Purpose
+
+The purpose of this is to apply type-safety and learn how to validate a JSON object without any usage of third-party dependencies.
 
 ## Todo
 
