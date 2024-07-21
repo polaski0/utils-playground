@@ -1,0 +1,14 @@
+{
+    "sets": [
+        {
+            "name": "authors",
+            "enabled": false,
+            "ttl": "30s"
+        },
+        {
+            "name": "posts",
+            "enabled": true,
+            "ttl": "10s"
+        }
+    ]
+}

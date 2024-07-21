@@ -1,9 +1,23 @@
+import config from "./config";
+
+type TCacheProps = {
+    stdTTL?: number;
+    isCheckerActive?: boolean;
+    checkPeriod?: number;
+    sets?: {
+        name: string;
+        enabled: boolean;
+        /** ttl must be in seconds if you're supplying a number */
+        ttl?: string | number;
+    }[];
+}
+
+/** All time related values are in seconds */
 type TCacheOptions = {
-    /** Standard time-to-live, default option if ttl is not provided during set */
-    isCheckerActive: boolean;
     stdTTL: number;
+    isCheckerActive: boolean;
     checkPeriod: number;
-};
+}
 
 type TData = {
     value: any;
@@ -17,13 +31,16 @@ type TDataKArr = string[] | number[];
  * An in-memory cache to allow faster serving of data back
  * to the client.
  */
-export const client = (opts?: Partial<TCacheOptions>) => {
+export const client = ({
+    sets,
+    ...opts
+}: TCacheProps) => {
     const data: Map<TDataK, TData> = new Map();
     const options: TCacheOptions = {
-        isCheckerActive: true,
+        isCheckerActive: false,
         stdTTL: 300,
         checkPeriod: 600,
-        ...opts,
+        ...opts
     };
 
     const get = (key: TDataK): any => {
@@ -43,38 +60,6 @@ export const client = (opts?: Partial<TCacheOptions>) => {
         data.set(key, _wrap(value, ttl));
     };
 
-    const mget = (keys: TDataKArr) => {
-        const obj: Record<TDataK, any> = {};
-
-        for (const key of keys) {
-            if (data.get(key)) {
-                obj[key] = data.get(key);
-            }
-        }
-
-        return obj;
-    };
-
-    const mset = (data: { key: TDataK; value: any }[]) => {
-        for (const keyValuePair of data) {
-            set(keyValuePair.key, keyValuePair.value);
-        }
-    };
-
-    /** Get the value of the key then delete from the cache */
-    const take = (key: TDataK): any => {
-        const data = get(key);
-        if (data !== undefined) {
-            del(key);
-        }
-        return data;
-    };
-
-    /** Check if key exists in cache */
-    const has = (key: TDataK): boolean => {
-        return _check(key, data.get(key)) && data.has(key);
-    };
-
     /** Delete key(s) in cache */
     const del = (keys: TDataK | TDataKArr) => {
         if (keys instanceof Array) {
@@ -84,11 +69,6 @@ export const client = (opts?: Partial<TCacheOptions>) => {
         } else {
             data.delete(keys);
         }
-    };
-
-    /** Returns all keys in the cache */
-    const keys = (): string[] => {
-        return Object.keys(data);
     };
 
     /** Internal checker if the key is still valid based on its ttl. Returns true if valid, otherwise false */
@@ -157,11 +137,6 @@ export const client = (opts?: Partial<TCacheOptions>) => {
     return {
         get,
         set,
-        has,
-        take,
-        keys,
-        mget,
-        mset,
         del,
         toggleIncrementalCheck,
     };
