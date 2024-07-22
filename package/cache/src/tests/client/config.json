@@ -6,7 +6,7 @@
             "ttl": "30s"
         },
         {
-            "name": "posts",
+            "name": "books",
             "enabled": true,
             "ttl": "10s"
         }

@@ -1,6 +1,4 @@
-import config from "./config";
-
-type TCacheProps = {
+export type TCacheProps = {
     stdTTL?: number;
     isCheckerActive?: boolean;
     checkPeriod?: number;
@@ -28,13 +26,10 @@ type TDataK = string | number;
 type TDataKArr = string[] | number[];
 
 /**
- * An in-memory cache to allow faster serving of data back
+ * A modified in-memory cache to allow faster serving of data back
  * to the client.
  */
-export const client = ({
-    sets,
-    ...opts
-}: TCacheProps) => {
+export const client = (opts?: Partial<TCacheOptions>) => {
     const data: Map<TDataK, TData> = new Map();
     const options: TCacheOptions = {
         isCheckerActive: false,
@@ -43,7 +38,7 @@ export const client = ({
         ...opts
     };
 
-    const get = (key: TDataK): any => {
+    const get = <T>(key: TDataK): T | undefined => {
         if (data.get(key) && _check(key, data.get(key))) {
             return _unwrap(data.get(key)!);
         }

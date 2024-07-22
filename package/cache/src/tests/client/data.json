@@ -1,0 +1,34 @@
+{
+    "authors": [
+        {
+            "id": 1,
+            "name": "John",
+            "age": 21
+        },
+        {
+            "id": 2,
+            "name": "Jane",
+            "age": 22
+        },
+    ],
+    "books": [
+        {
+            "id": 1,
+            "title": "John's Book #1",
+            "description": "John's first book published",
+            "author_id": 1
+        },
+        {
+            "id": 2,
+            "title": "Jane's Book #1",
+            "description": "Jane's first book published",
+            "author_id": 2
+        },
+        {
+            "id": 3,
+            "title": "John's Book #2",
+            "description": "John's second book published",
+            "author_id": 1
+        },
+    ]
+}
