@@ -12,7 +12,7 @@
     *   - 1y = 1 year
     *   - 10s = 10 seconds
     */
-export const parse = (value: string) => {
+export const split = (value: string) => {
     const array: string[] = []
     let type = ""
     let acc = ""
@@ -38,19 +38,24 @@ export const parse = (value: string) => {
     return array;
 }
 
-export const convertToMilliseconds = (value: string[]): number => {
-    if (value.length % 2 !== 0) {
-        throw new Error(`Invalid length: ${value.length}`);
+/** 
+    * This function is used to parse a date in a specific format into millisecond 
+    * where "1y" will return the value in milliseconds of that day.
+    */
+export const parse = (value: string): number => {
+    const array = split(value)
+    if (array.length % 2 !== 0) {
+        throw new Error(`Invalid length: ${array.length}; Must be an even number.`);
     }
 
     const currDate = new Date();
 
-    for (let i = 0; i < value.length; i += 2) {
-        const num = parseInt(value[i])
-        const suffix = value[i + 1]
+    for (let i = 0; i < array.length; i += 2) {
+        const num = parseInt(array[i])
+        const suffix = array[i + 1]
 
         if (isNaN(num)) {
-            throw new Error(`Invalid value: ${value[i]}`)
+            throw new Error(`Invalid array: ${array[i]}`)
         }
 
         if (suffix == "y") {

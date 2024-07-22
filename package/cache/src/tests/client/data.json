@@ -9,7 +9,7 @@
             "id": 2,
             "name": "Jane",
             "age": 22
-        },
+        }
     ],
     "books": [
         {
@@ -29,6 +29,6 @@
             "title": "John's Book #2",
             "description": "John's second book published",
             "author_id": 1
-        },
+        }
     ]
 }
