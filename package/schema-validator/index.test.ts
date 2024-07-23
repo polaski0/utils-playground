@@ -1,13 +1,35 @@
 import { s } from "."
 
-describe("schema validator", () => {
-    it("should validate string schema to true", () => {
+describe("string schema validator", () => {
+    it("should validate empty string schema to true", () => {
         const stringSchema = s.string()
         const result = stringSchema.validate("");
         expect(result.isValid).toBe(true)
     })
 
-    it("should validate object schema to true", () => {
+    it("should validate required string schema to false", () => {
+        const stringSchema = s.string().required()
+        const result = stringSchema.validate("");
+        expect(result.isValid).toBe(false)
+    })
+})
+
+describe("number schema validator", () => {
+    it("should validate empty number schema to true", () => {
+        const numberSchema = s.number()
+        const result = numberSchema.validate();
+        expect(result.isValid).toBe(true)
+    })
+
+    it("should validate required number schema to false", () => {
+        const numberSchema = s.number().required()
+        const result = numberSchema.validate("");
+        expect(result.isValid).toBe(false)
+    })
+})
+
+describe("object schema validator", () => {
+    it("should validate nested object schema to true", () => {
         const objectSchema = s.object({
             name: s.string().required(),
             age: s.number().required(),
@@ -29,7 +51,7 @@ describe("schema validator", () => {
         expect(result.isValid).toBe(true)
     })
 
-    it("should validate object schema to true", () => {
+    it("should validate nested object schema without required address to true", () => {
         const objectSchema = s.object({
             name: s.string().required(),
             age: s.number().required(),
@@ -48,7 +70,7 @@ describe("schema validator", () => {
         expect(result.isValid).toBe(true);
     })
 
-    it("should validate object schema to false", () => {
+    it("should validate nested object schema with required zip code to false", () => {
         const objectSchema = s.object({
             name: s.string().required(),
             age: s.number().required(),

@@ -49,7 +49,7 @@ class BaseV {
         );
     }
 
-    validate<T extends TValue>(value: T) {
+    validate<T extends TValue>(value?: T) {
         if (!this._isEmpty(value) || this._options.required) {
             this._rules.forEach((rule) => {
                 const ok = rule.cb(value);
@@ -139,7 +139,7 @@ class ObjectV extends BaseV {
 
     /** Fix recursive validation of object */
     validate<T extends Record<any, any>>(value: T): this {
-        if (this._options.required && typeof value !== "object" && value !== null) {
+        if (this._options.required && typeof value !== "object") {
             this.isValid = false;
             this._addError(new ValidationError("Invalid Object", value));
         }
