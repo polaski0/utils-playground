@@ -11,10 +11,11 @@ type TValue = string | number | Record<any, any> | undefined | null;
 
 type TValidationError = ValidationError;
 
-class ValidationError {
+class ValidationError extends Error {
     name: string;
     value: any;
     constructor(name: string, value: any) {
+        super(name);
         this.name = name;
         this.value = value;
     }
@@ -138,11 +139,19 @@ class ObjectV extends BaseV {
 
     /** Fix recursive validation of object */
     validate<T extends Record<any, any>>(value: T): this {
-        if (typeof value !== "object" && value !== null) {
+        if (this._options.required && typeof value !== "object" && value !== null) {
             this.isValid = false;
             this._addError(new ValidationError("Invalid Object", value));
-        } else {
+        }
+
+        if (value) {
             for (const key in this._schema) {
+                if (this._schema[key]._options.required && !value[key]) {
+                    this.isValid = false
+                    this._addError(new ValidationError("Required", value[key]));
+                    continue;
+                }
+
                 const _b = this._schema[key].validate((value as TObjectSchema)[key]);
                 if (!_b.isValid) {
                     this._addError(_b.errors);
