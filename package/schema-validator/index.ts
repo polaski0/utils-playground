@@ -29,11 +29,18 @@ class BaseV {
 
     constructor() {
         this._options = {
-            required: false,
+            required: true,
         };
         this._rules = [];
         this.errors = [];
         this.isValid = true;
+
+        if (this._options.required) {
+            this.rule(
+                "Required",
+                (value: any) => value !== undefined && value !== null && value !== "",
+            );
+        }
     }
 
     rule(name: string, cb: (value: any) => boolean, opts = {}) {
@@ -41,12 +48,9 @@ class BaseV {
         return this;
     }
 
-    required() {
-        this._options.required = true;
-        return this.rule(
-            "Required",
-            (value: any) => value !== undefined && value !== null && value !== "",
-        );
+    optional() {
+        this._options.required = false;
+        return this
     }
 
     validate<T extends TValue>(value?: T) {

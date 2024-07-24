@@ -2,13 +2,13 @@ import { s } from "."
 
 describe("string schema validator", () => {
     it("should validate empty string schema to true", () => {
-        const stringSchema = s.string()
+        const stringSchema = s.string().optional()
         const result = stringSchema.validate("");
         expect(result.isValid).toBe(true)
     })
 
     it("should validate required string schema to false", () => {
-        const stringSchema = s.string().required()
+        const stringSchema = s.string();
         const result = stringSchema.validate("");
         expect(result.isValid).toBe(false)
     })
@@ -16,13 +16,13 @@ describe("string schema validator", () => {
 
 describe("number schema validator", () => {
     it("should validate empty number schema to true", () => {
-        const numberSchema = s.number()
+        const numberSchema = s.number().optional()
         const result = numberSchema.validate();
         expect(result.isValid).toBe(true)
     })
 
     it("should validate required number schema to false", () => {
-        const numberSchema = s.number().required()
+        const numberSchema = s.number();
         const result = numberSchema.validate("");
         expect(result.isValid).toBe(false)
     })
@@ -31,12 +31,12 @@ describe("number schema validator", () => {
 describe("object schema validator", () => {
     it("should validate nested object schema to true", () => {
         const objectSchema = s.object({
-            name: s.string().required(),
-            age: s.number().required(),
+            name: s.string(),
+            age: s.number(),
             address: s.object({
-                zipCode: s.string().required(),
-                street_1: s.string(),
-            }),
+                zipCode: s.string(),
+                street_1: s.string().optional(),
+            }).optional(),
         });
 
         const data = {
@@ -51,14 +51,14 @@ describe("object schema validator", () => {
         expect(result.isValid).toBe(true)
     })
 
-    it("should validate nested object schema without required address to true", () => {
+    it("should validate nested object schema with optional address to true", () => {
         const objectSchema = s.object({
-            name: s.string().required(),
-            age: s.number().required(),
+            name: s.string(),
+            age: s.number(),
             address: s.object({
-                zipCode: s.string().required(),
+                zipCode: s.string().optional(),
                 street_1: s.string(),
-            }),
+            }).optional(),
         });
 
         const data = {
@@ -70,12 +70,12 @@ describe("object schema validator", () => {
         expect(result.isValid).toBe(true);
     })
 
-    it("should validate nested object schema with required zip code to false", () => {
+    it("should validate nested object schema with missing zip code to false", () => {
         const objectSchema = s.object({
-            name: s.string().required(),
-            age: s.number().required(),
+            name: s.string(),
+            age: s.number(),
             address: s.object({
-                zipCode: s.string().required(),
+                zipCode: s.string(),
                 street_1: s.string(),
             }),
         });
@@ -86,6 +86,25 @@ describe("object schema validator", () => {
             address: {
                 street_1: "123 Street",
             },
+        };
+
+        const result = objectSchema.validate(data);
+        expect(result.isValid).toBe(false);
+    })
+
+    it("should validate nested object schema with required address to false", () => {
+        const objectSchema = s.object({
+            name: s.string(),
+            age: s.number(),
+            address: s.object({
+                zipCode: s.string(),
+                street_1: s.string().optional(),
+            })
+        });
+
+        const data = {
+            name: "John",
+            age: 21,
         };
 
         const result = objectSchema.validate(data);
