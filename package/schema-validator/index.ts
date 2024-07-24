@@ -35,6 +35,7 @@ class BaseV {
         this.errors = [];
         this.isValid = true;
 
+        // Initialize default rules
         if (this._options.required) {
             this.rule(
                 "Required",
@@ -168,9 +169,35 @@ class ObjectV extends BaseV {
     }
 }
 
+class BooleanV extends BaseV {
+    constructor() {
+        // Not yet implemented
+        super();
+        this.rule("Boolean", (value) => typeof value === "boolean");
+    }
+}
+
+class ArrayV extends BaseV {
+    constructor() {
+        // Not yet implemented
+        super();
+        this.rule("Array", (value) => value instanceof Array);
+    }
+}
+
+class DateV extends BaseV {
+    constructor() {
+        // Not yet implemented
+        super();
+        this.rule("Date", (value) => value instanceof Date);
+    }
+}
+
 export const s = {
     string: () => new StringV(),
     number: () => new NumberV(),
     object: (schema: Record<string, BaseV>) => new ObjectV(schema),
+    boolean: () => new BooleanV(), // Not yet implemented
+    array: () => new ArrayV(), // Not yet implemented
+    date: () => new DateV(), // Not yet implemented
 };
-
