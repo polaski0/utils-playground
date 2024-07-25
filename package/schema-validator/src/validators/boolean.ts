@@ -1,6 +1,6 @@
-import { BaseV } from "./base";
+import { SchemaV } from "./schema";
 
-export class BooleanV extends BaseV {
+export class BooleanV extends SchemaV {
     constructor() {
         // Not yet implemented
         super();

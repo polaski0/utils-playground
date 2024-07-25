@@ -1,5 +1,5 @@
 import {
-    BaseV,
+    SchemaV,
     StringV,
     NumberV,
     ObjectV,
@@ -11,7 +11,7 @@ import {
 export const s = {
     string: () => new StringV(),
     number: () => new NumberV(),
-    object: (schema: Record<string, BaseV>) => new ObjectV(schema),
+    object: (schema: Record<string, SchemaV>) => new ObjectV(schema),
     boolean: () => new BooleanV(), // Not yet implemented
     array: () => new ArrayV(), // Not yet implemented
     date: () => new DateV(), // Not yet implemented

@@ -1,9 +1,9 @@
 import { ValidationError } from "../types/errors";
-import { BaseV } from "./base";
+import { SchemaV } from "./schema";
 
-type TObjectSchema = Record<string, BaseV>;
+type TObjectSchema = Record<string, SchemaV>;
 
-export class ObjectV extends BaseV {
+export class ObjectV extends SchemaV {
     _schema: TObjectSchema;
 
     constructor(schema: TObjectSchema) {

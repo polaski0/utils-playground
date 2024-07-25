@@ -1,6 +1,6 @@
-import { BaseV } from "./base";
+import { SchemaV } from "./schema";
 
-export class DateV extends BaseV {
+export class DateV extends SchemaV {
     constructor() {
         // Not yet implemented
         super();

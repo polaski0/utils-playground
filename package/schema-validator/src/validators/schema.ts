@@ -1,7 +1,7 @@
 import { TOptions, TRule, TValidationError, TValue } from "../types";
 import { ValidationError } from "../types/errors";
 
-export class BaseV {
+export class SchemaV {
     _rules: TRule[];
     _options: TOptions;
     errors: TValidationError[];

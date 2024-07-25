@@ -1,4 +1,4 @@
-export * from "./base"
+export * from "./schema"
 export * from "./date"
 export * from "./array"
 export * from "./number"

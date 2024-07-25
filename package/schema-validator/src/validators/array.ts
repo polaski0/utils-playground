@@ -1,6 +1,6 @@
-import { BaseV } from "./base";
+import { SchemaV } from "./schema";
 
-export class ArrayV extends BaseV {
+export class ArrayV extends SchemaV {
     constructor() {
         // Not yet implemented
         super();

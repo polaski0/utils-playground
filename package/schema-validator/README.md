@@ -26,3 +26,43 @@ The purpose of this is to apply type-safety and learn how to validate a JSON obj
     - [ ] Value passed on the validation function
   - [ ] isValid
     - [ ] Boolean
+
+
+## Return Type
+```js
+{
+  typed: true,
+  success: false,
+  output: {
+    email: "jane@example.com",
+    password: ""
+  },
+  issues: [
+    {
+      kind: "validation",
+      type: "min_length",
+      input: "",
+      expected: ">=8",
+      received: "0",
+      message: "Invalid length: Expected >=8 but received 0",
+      requirement: 8,
+      path: [
+        {
+          type: "object",
+          origin: "value",
+          input: {
+            email: "jane@example.com",
+            password: ""
+          },
+          key: "password",
+          value: ""
+        }
+      ],
+      issues: undefined,
+      lang: undefined,
+      abortEarly: undefined,
+      abortPipeEarly: undefined
+    }
+  ]
+}
+```

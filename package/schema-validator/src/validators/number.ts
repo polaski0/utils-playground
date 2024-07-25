@@ -1,6 +1,6 @@
-import { BaseV } from "./base";
+import { SchemaV } from "./schema";
 
-export class NumberV extends BaseV {
+export class NumberV extends SchemaV {
     constructor() {
         super();
         this.rule("Number", (value) => typeof value === "number");
