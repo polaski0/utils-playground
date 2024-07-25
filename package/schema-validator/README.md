@@ -15,15 +15,24 @@ The purpose of this is to apply type-safety and learn how to validate a JSON obj
   - [x] Date
   - [x] Object
   - [x] Boolean
+
+- [ ] Create custom error class that extends Error interface
+
+- [ ] Create error locales:
+  - [ ] Number
+  - [ ] String
+  - [ ] Array
+  - [ ] Date
+  - [ ] Object
+  - [ ] Boolean
+
 - [ ] Create tests for schema
-- [ ] Fix recursive validation of `ObjectV`
-- [ ] Create custom error for the Validation class
-- [ ] Fix adding of error
-- [ ] Fix return value of `validate` method
-  - [ ] error
-    - [ ] Array of custom errors
-  - [ ] value
-    - [ ] Value passed on the validation function
-  - [ ] isValid
-    - [ ] Boolean
-- [ ] Custom error messages
+
+- [ ] Create proper types and interfaces
+  - [ ] Interface for `SchemaV`
+  - [ ] Error types
+
+- [ ] Additional options on `SchemaV`
+  - [ ] Removed unvalidated keys
+  - [ ] Stop on first error
+  - [ ] Validate async
