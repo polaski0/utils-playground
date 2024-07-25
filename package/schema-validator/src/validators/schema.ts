@@ -15,7 +15,14 @@ export class SchemaV {
         this.required()
     }
 
-    rule(name: string, cb: (value: any) => boolean, opts: { message: string, value?: unknown }) {
+    rule(
+        name: string,
+        cb: (value: unknown) => boolean,
+        opts: {
+            message: string,
+            value?: unknown
+        },
+    ) {
         this._rules.push({ name, cb, ...opts });
         return this;
     }
@@ -68,7 +75,12 @@ export class SchemaV {
         return !(value !== undefined && value !== null && value !== "");
     }
 
-    _createError(type: string, input: unknown, expected: unknown, message: string) {
+    _createError(
+        type: string,
+        input: unknown,
+        expected: unknown,
+        message: string
+    ) {
         const _issue: TIssue = {
             type,
             input,

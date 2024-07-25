@@ -37,7 +37,7 @@ export class ArrayV extends SchemaV {
     contains<T>(needle: T) {
         return this.rule(
             "contains",
-            (value: T[]) => {
+            (value) => {
                 if (value instanceof Array) {
                     return value.includes(needle);
                 }
