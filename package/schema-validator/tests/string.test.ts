@@ -13,6 +13,12 @@ describe("string schema validator", () => {
         expect(result.valid).toBe(true)
     })
 
+    it("should validate string with length >= 8 and <= 12 to true", () => {
+        const stringSchema = s.string().min(8).max(12);
+        const result = stringSchema.validate("123456789");
+        expect(result.valid).toBe(true)
+    })
+
     it("should validate required string schema to false", () => {
         const stringSchema = s.string();
         const result = stringSchema.validate("");
@@ -22,6 +28,12 @@ describe("string schema validator", () => {
     it("should validate string schema with min to false", () => {
         const stringSchema = s.string().min(5);
         const result = stringSchema.validate("Hell");
+        expect(result.valid).toBe(false)
+    })
+
+    it("should validate string with length >= 8 and <= 12 to false", () => {
+        const stringSchema = s.string().min(8).max(12);
+        const result = stringSchema.validate("1234567");
         expect(result.valid).toBe(false)
     })
 })

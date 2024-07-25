@@ -17,7 +17,8 @@ export class NumberV extends SchemaV {
             "Min",
             (value) => typeof value === "number" && value >= num,
             {
-                message: `Must be greater than or equal to ${num}`
+                message: `Must be greater than or equal to ${num}`,
+                value: num,
             }
         );
     }
@@ -27,7 +28,8 @@ export class NumberV extends SchemaV {
             "Min",
             (value) => typeof value === "number" && value <= num,
             {
-                message: `Must be less than or equal to ${num}`
+                message: `Must be less than or equal to ${num}`,
+                value: num,
             }
         );
     }

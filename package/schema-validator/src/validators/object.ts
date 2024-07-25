@@ -32,10 +32,7 @@ export class ObjectV extends SchemaV {
                     }
 
                     _result.valid = false;
-                    this._issues = [
-                        ...this._issues,
-                        ...result.issues
-                    ];
+                    this._issues.push(...result.issues)
                 }
             }
         }

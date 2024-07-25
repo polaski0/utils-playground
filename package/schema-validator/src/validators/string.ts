@@ -17,7 +17,8 @@ export class StringV extends SchemaV {
             "Min",
             (value) => typeof value === "string" && value.length >= num,
             {
-                message: `Must have a minimum value of ${num}`
+                message: `Must have a minimum length of ${num}`,
+                value: num,
             }
         );
     }
@@ -27,7 +28,8 @@ export class StringV extends SchemaV {
             "Max",
             (value) => typeof value === "string" && value.length <= num,
             {
-                message: `Must have a maximum value of ${num}`
+                message: `Must have a maximum length of ${num}`,
+                value: num,
             }
         );
     }

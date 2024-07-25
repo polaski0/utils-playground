@@ -8,6 +8,7 @@ export type TRule = {
     name: string,
     cb: (value: any) => boolean,
     message: string,
+    value?: unknown,
 };
 
 export type TValue = string | number | Record<any, any> | undefined | null;

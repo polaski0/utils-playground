@@ -15,7 +15,7 @@ export class SchemaV {
         this.required()
     }
 
-    rule(name: string, cb: (value: any) => boolean, opts: { message: string }) {
+    rule(name: string, cb: (value: any) => boolean, opts: { message: string, value?: unknown }) {
         this._rules.push({ name, cb, ...opts });
         return this;
     }
@@ -47,7 +47,7 @@ export class SchemaV {
             for (const rule of this._rules) {
                 if (!rule.cb(value)) {
                     _result.valid = false;
-                    this._createError(rule.name, value, undefined, rule.message)
+                    this._createError(rule.name, value, rule.value, rule.message)
                 }
             }
         }
