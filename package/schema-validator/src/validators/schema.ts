@@ -27,7 +27,7 @@ export class SchemaV {
         return this;
     }
 
-    required() {
+    required(message?: string) {
         this._options.required = true;
         return this.rule(
             "required",
