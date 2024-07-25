@@ -4,6 +4,12 @@ export class DateV extends SchemaV {
     constructor() {
         // Not yet implemented
         super();
-        this.rule("Date", (value) => value instanceof Date);
+        this.rule(
+            "Date",
+            (value) => value instanceof Date,
+            {
+                message: "Must be a type of date"
+            }
+        );
     }
 }

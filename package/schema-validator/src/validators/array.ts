@@ -4,6 +4,12 @@ export class ArrayV extends SchemaV {
     constructor() {
         // Not yet implemented
         super();
-        this.rule("Array", (value) => value instanceof Array);
+        this.rule(
+            "Array",
+            (value) => value instanceof Array,
+            {
+                message: "Must be an array"
+            }
+        );
     }
 }

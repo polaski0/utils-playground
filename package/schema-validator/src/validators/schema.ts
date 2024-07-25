@@ -1,60 +1,59 @@
-import { TOptions, TRule, TValidationError, TValue } from "../types";
-import { ValidationError } from "../types/errors";
+import { TIssue, TOptions, TResult, TRule } from "../types";
 
 export class SchemaV {
     _rules: TRule[];
     _options: TOptions;
-    errors: TValidationError[];
-    isValid: boolean;
+    _issues: TIssue[] | undefined;
 
     constructor() {
         this._options = {
             required: true,
         };
         this._rules = [];
-        this.errors = [];
-        this.isValid = true;
+        this._issues = [];
 
-        // Initialize default rules
-        if (this._options.required) {
-            this.rule(
-                "Required",
-                (value: any) => value !== undefined && value !== null && value !== "",
-            );
-        }
+        this.required()
     }
 
-    rule(name: string, cb: (value: any) => boolean, opts = {}) {
+    rule(name: string, cb: (value: any) => boolean, opts: { message: string }) {
         this._rules.push({ name, cb, ...opts });
         return this;
     }
 
-    optional() {
-        this._options.required = false;
-        return this
+    required() {
+        this._options.required = true;
+        return this.rule(
+            "required",
+            (v) => v !== undefined && v !== null && v !== "",
+            {
+                message: "Required"
+            }
+        );
     }
 
-    validate<T extends TValue>(value?: T) {
-        if (!this._isEmpty(value) || this._options.required) {
-            this._rules.forEach((rule) => {
-                const ok = rule.cb(value);
-                if (!ok) {
-                    this.isValid = false;
-                    this._addError(new ValidationError(rule.name, value));
-                }
-            });
-        }
-
+    optional() {
+        this._options.required = false;
+        this._removeRule("required");
         return this;
     }
 
-    /** Push error to _errors array */
-    _addError(err: TValidationError | TValidationError[]) {
-        if (err instanceof Array) {
-            this.errors.push(...err);
-        } else {
-            this.errors.push(err);
+    validate<T>(value?: T): TResult<T> {
+        const _result: TResult<T> = {
+            valid: true,
+            output: value
+        };
+
+        if (!this._isEmpty(value) || this._options.required) {
+            for (const rule of this._rules) {
+                if (!rule.cb(value)) {
+                    _result.valid = false;
+                    this._createError(rule.name, value, undefined, rule.message)
+                }
+            }
         }
+
+        _result.issues = this._issues
+        return _result;
     }
 
     _isEmpty<T>(value: T) {
@@ -62,10 +61,34 @@ export class SchemaV {
             return value.length > 0 ? false : true;
         }
 
-        if (typeof value === "object" && value !== null) {
+        if (typeof value === "object" && value) {
             return Object.entries(value).length > 0 ? false : true;
         }
 
         return !(value !== undefined && value !== null && value !== "");
+    }
+
+    _createError(type: string, input: unknown, expected: unknown, message: string) {
+        const _issue: TIssue = {
+            type,
+            input,
+            expected,
+            received: input,
+            message,
+        }
+
+        if (!this._issues) {
+            this._issues = []
+        }
+
+        this._issues.push(_issue)
+        return _issue;
+    }
+
+    _removeRule(name: string) {
+        const index = this._rules.findIndex((r) => r.name === name);
+        if (index !== -1) {
+            this._rules.splice(index, 1);
+        }
     }
 }

@@ -8,7 +8,7 @@ describe("object schema validator", () => {
             address: s.object({
                 zipCode: s.string(),
                 street_1: s.string().optional(),
-            }).optional(),
+            }),
         });
 
         const data = {
@@ -20,7 +20,7 @@ describe("object schema validator", () => {
         };
 
         const result = objectSchema.validate(data);
-        expect(result.isValid).toBe(true)
+        expect(result.valid).toBe(true)
     })
 
     it("should validate nested object schema with optional address to true", () => {
@@ -39,7 +39,7 @@ describe("object schema validator", () => {
         };
 
         const result = objectSchema.validate(data);
-        expect(result.isValid).toBe(true);
+        expect(result.valid).toBe(true);
     })
 
     it("should validate nested object schema with missing zip code to false", () => {
@@ -61,7 +61,7 @@ describe("object schema validator", () => {
         };
 
         const result = objectSchema.validate(data);
-        expect(result.isValid).toBe(false);
+        expect(result.valid).toBe(false);
     })
 
     it("should validate nested object schema with required address to false", () => {
@@ -70,7 +70,7 @@ describe("object schema validator", () => {
             age: s.number(),
             address: s.object({
                 zipCode: s.string(),
-                street_1: s.string().optional(),
+                street_1: s.string(),
             })
         });
 
@@ -80,6 +80,6 @@ describe("object schema validator", () => {
         };
 
         const result = objectSchema.validate(data);
-        expect(result.isValid).toBe(false);
+        expect(result.valid).toBe(false);
     })
 })

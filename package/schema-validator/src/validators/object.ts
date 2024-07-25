@@ -1,7 +1,7 @@
-import { ValidationError } from "../types/errors";
+import { TResult } from "../types";
 import { SchemaV } from "./schema";
 
-type TObjectSchema = Record<string, SchemaV>;
+type TObjectSchema = Record<string | number | symbol, SchemaV>;
 
 export class ObjectV extends SchemaV {
     _schema: TObjectSchema;
@@ -11,29 +11,36 @@ export class ObjectV extends SchemaV {
         this._schema = schema;
     }
 
-    /** Fix recursive validation of object */
-    validate<T extends Record<any, any>>(value: T): this {
-        if (this._options.required && typeof value !== "object") {
-            this.isValid = false;
-            this._addError(new ValidationError("Invalid Object", value));
+    validate<T extends Record<any, any>>(value?: T): TResult<T> {
+        const _result: TResult<T> = {
+            valid: true,
+            output: value
+        };
+
+        if (this._isEmpty(value) && this._options.required) {
+            _result.valid = false;
         }
 
-        if (value) {
+        if (value && typeof value === "object" && !this._isEmpty(value)) {
             for (const key in this._schema) {
-                if (this._schema[key]._options.required && !value[key]) {
-                    this.isValid = false
-                    this._addError(new ValidationError("Required", value[key]));
-                    continue;
-                }
+                const _schema = this._schema[key];
+                const result = _schema.validate(value[key]);
 
-                const _b = this._schema[key].validate((value as TObjectSchema)[key]);
-                if (!_b.isValid) {
-                    this._addError(_b.errors);
-                    this.isValid = false;
+                if (!result.valid && result.issues) {
+                    if (!this._issues) {
+                        this._issues = [];
+                    }
+
+                    _result.valid = false;
+                    this._issues = [
+                        ...this._issues,
+                        ...result.issues
+                    ];
                 }
             }
         }
 
-        return this;
+        _result.issues = this._issues
+        return _result
     }
 }
