@@ -4,7 +4,7 @@ export class StringV extends SchemaV {
     constructor() {
         super();
         this.rule(
-            "String",
+            "string",
             (value) => typeof value === "string",
             {
                 message: "Must be type of string"
@@ -14,7 +14,7 @@ export class StringV extends SchemaV {
 
     min(num: number) {
         return this.rule(
-            "Min",
+            "min",
             (value) => typeof value === "string" && value.length >= num,
             {
                 message: `Must have a minimum length of ${num}`,
@@ -25,11 +25,22 @@ export class StringV extends SchemaV {
 
     max(num: number) {
         return this.rule(
-            "Max",
+            "max",
             (value) => typeof value === "string" && value.length <= num,
             {
                 message: `Must have a maximum length of ${num}`,
                 value: num,
+            }
+        );
+    }
+
+    matches(regex: RegExp) {
+        return this.rule(
+            "matches",
+            (value) => typeof value === "string" && regex.test(value),
+            {
+                message: `Does not match ${regex}`,
+                value: regex,
             }
         );
     }

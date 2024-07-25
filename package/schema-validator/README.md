@@ -26,6 +26,7 @@ The purpose of this is to apply type-safety and learn how to validate a JSON obj
     - [ ] Value passed on the validation function
   - [ ] isValid
     - [ ] Boolean
+- [ ] Custom error messages
 
 ## Validations
 

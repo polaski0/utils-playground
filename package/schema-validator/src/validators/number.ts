@@ -4,7 +4,7 @@ export class NumberV extends SchemaV {
     constructor() {
         super();
         this.rule(
-            "Number",
+            "number",
             (value) => typeof value === "number",
             {
                 message: "Must be a type of number"
@@ -14,7 +14,7 @@ export class NumberV extends SchemaV {
 
     min(num: number) {
         return this.rule(
-            "Min",
+            "min",
             (value) => typeof value === "number" && value >= num,
             {
                 message: `Must be greater than or equal to ${num}`,
@@ -25,7 +25,7 @@ export class NumberV extends SchemaV {
 
     max(num: number) {
         return this.rule(
-            "Min",
+            "min",
             (value) => typeof value === "number" && value <= num,
             {
                 message: `Must be less than or equal to ${num}`,

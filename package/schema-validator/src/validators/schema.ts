@@ -24,7 +24,7 @@ export class SchemaV {
         this._options.required = true;
         return this.rule(
             "required",
-            (v) => v !== undefined && v !== null && v !== "",
+            (value) => value !== undefined && value !== null && value !== "",
             {
                 message: "Required"
             }
