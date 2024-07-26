@@ -22,6 +22,7 @@ export type TResult<T> = {
 }
 
 export type TIssue = {
+    key?: string,
     type: string,
     input: unknown,
     expected: unknown,

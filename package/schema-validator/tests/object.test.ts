@@ -56,7 +56,7 @@ describe("object schema validator", () => {
             name: "John",
             age: 21,
             address: {
-                street_1: "123 Street",
+                street_1: 123,
             },
         };
 
@@ -83,3 +83,4 @@ describe("object schema validator", () => {
         expect(result.valid).toBe(false);
     })
 })
+

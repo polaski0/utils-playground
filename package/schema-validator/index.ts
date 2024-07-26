@@ -12,9 +12,9 @@ export const s = {
     string: () => new StringV(),
     number: () => new NumberV(),
     object: (schema: Record<string | number | symbol, SchemaV>) => new ObjectV(schema),
-    boolean: () => new BooleanV(), // Not yet implemented
-    array: () => new ArrayV(), // Not yet implemented
-    date: () => new DateV(), // Not yet implemented
+    boolean: () => new BooleanV(),
+    array: () => new ArrayV(),
+    date: () => new DateV(),
 };
 
 // -- DO NOT MODIFY ABOVE THE LINE --

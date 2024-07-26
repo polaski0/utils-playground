@@ -28,7 +28,9 @@ export class ObjectV extends SchemaV {
                     }
 
                     _result.valid = false;
-                    this._issues.push(...result.issues)
+                    for (const issue of result.issues) {
+                        this._issues.push({ key, ...issue })
+                    }
                 }
             }
         }

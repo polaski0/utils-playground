@@ -41,3 +41,38 @@ The purpose of this is to apply type-safety and learn how to validate a JSON obj
   - [ ] Removed unvalidated keys
   - [ ] Stop on first error
   - [ ] Validate async
+
+### Sample Payload
+
+```js
+const data = {
+    name: "John",
+    age: 21,
+};
+
+const oldError = {
+    address: {
+        issues: {
+            required: "",
+            minLength: ""
+        }
+    }
+}
+
+const newError = {
+    issues: {
+        address: {
+            issues: [
+                {
+                    type: "required",
+                    value: undefined,
+                },
+                {
+                    type: "minLength",
+                    value: undefined,
+                },
+            ]
+        }
+    },
+}
+```
