@@ -1,3 +1,4 @@
+import { array } from "../locale";
 import { SchemaV } from "./schema";
 
 export class ArrayV extends SchemaV {
@@ -7,41 +8,41 @@ export class ArrayV extends SchemaV {
             "array",
             (value) => value instanceof Array,
             {
-                message: "Must be an array"
+                message: array.default
             }
         );
     }
 
-    min(num: number) {
+    min(num: number, message?: string) {
         return this.rule(
             "min",
             (value) => value instanceof Array && value.length >= num,
             {
-                message: `Must have a minimum length of ${num}`,
+                message: message ?? array.min,
                 value: num,
             }
         );
     }
 
-    max(num: number) {
+    max(num: number, message?: string) {
         return this.rule(
             "max",
             (value) => value instanceof Array && value.length <= num,
             {
-                message: `Must have a maximum length of ${num}`,
+                message: message ?? array.max,
                 value: num,
             }
         );
     }
 
-    contains<T>(needle: T) {
+    contains<T>(needle: T, message?: string) {
         return this.rule(
             "contains",
             (value) => value instanceof Array
                 ? value.includes(needle)
                 : false,
             {
-                message: needle + " does not exists.",
+                message: message ?? array.contains,
                 value: needle,
             }
         );

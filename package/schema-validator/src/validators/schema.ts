@@ -1,3 +1,4 @@
+import { common } from "../locale";
 import { TIssue, TOptions, TResult, TRule } from "../types";
 
 export class SchemaV {
@@ -23,7 +24,21 @@ export class SchemaV {
             value?: unknown
         },
     ) {
-        this._rules.push({ name, cb, ...opts });
+        const index = this._rules.findIndex((rule) => rule.name === name)
+        if (index === -1) {
+            this._rules.push({
+                name,
+                cb,
+                ...opts
+            });
+        } else {
+            this._rules[index] = {
+                name,
+                cb,
+                ...opts
+            };
+        }
+
         return this;
     }
 
@@ -33,7 +48,7 @@ export class SchemaV {
             "required",
             (value) => value !== undefined && value !== null && value !== "",
             {
-                message: "Required"
+                message: message ?? common.required,
             }
         );
     }

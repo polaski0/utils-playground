@@ -18,16 +18,18 @@ The purpose of this is to apply type-safety and learn how to validate a JSON obj
 
 - [ ] Create custom error class that extends Error interface
 
-- [ ] Create error locales:
-  - [ ] Number
-  - [ ] String
-  - [ ] Array
-  - [ ] Date
-  - [ ] Object
-  - [ ] Boolean
+- [x] Create error locales:
+  - [x] Number
+  - [x] String
+  - [x] Array
+  - [x] Date
+  - [x] Object
+  - [x] Boolean
 
 - [ ] Validation methods
   - [ ] Add support for custom messages
+  - [ ] Nested objects validation
+  - [ ] Displaying of invalid keys
 
 - [ ] Create tests for schema
 

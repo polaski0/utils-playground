@@ -1,3 +1,4 @@
+import { date } from "../locale";
 import { SchemaV } from "./schema";
 
 export class DateV extends SchemaV {
@@ -7,7 +8,7 @@ export class DateV extends SchemaV {
             "date",
             (value) => value instanceof Date,
             {
-                message: "Must be a type of date"
+                message: date.default,
             }
         );
     }

@@ -1,3 +1,4 @@
+import { string } from "../locale";
 import { SchemaV } from "./schema";
 
 export class StringV extends SchemaV {
@@ -7,39 +8,39 @@ export class StringV extends SchemaV {
             "string",
             (value) => typeof value === "string",
             {
-                message: "Must be type of string"
+                message: string.default,
             }
         );
     }
 
-    min(num: number) {
+    min(num: number, message?: string) {
         return this.rule(
             "min",
             (value) => typeof value === "string" && value.length >= num,
             {
-                message: `Must have a minimum length of ${num}`,
+                message: message ?? string.min,
                 value: num,
             }
         );
     }
 
-    max(num: number) {
+    max(num: number, message?: string) {
         return this.rule(
             "max",
             (value) => typeof value === "string" && value.length <= num,
             {
-                message: `Must have a maximum length of ${num}`,
+                message: message ?? string.max,
                 value: num,
             }
         );
     }
 
-    matches(regex: RegExp) {
+    matches(regex: RegExp, message?: string) {
         return this.rule(
             "matches",
             (value) => typeof value === "string" && regex.test(value),
             {
-                message: `Does not match ${regex}`,
+                message: message ?? string.matches,
                 value: regex,
             }
         );

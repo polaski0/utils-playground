@@ -1,3 +1,4 @@
+import { boolean } from "../locale";
 import { SchemaV } from "./schema";
 
 export class BooleanV extends SchemaV {
@@ -7,7 +8,7 @@ export class BooleanV extends SchemaV {
             "boolean",
             (value) => typeof value === "boolean",
             {
-                message: "Must be type of boolean"
+                message: boolean.default,
             }
         );
     }

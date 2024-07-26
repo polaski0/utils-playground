@@ -1,3 +1,4 @@
+import { number } from "../locale";
 import { SchemaV } from "./schema";
 
 export class NumberV extends SchemaV {
@@ -7,28 +8,28 @@ export class NumberV extends SchemaV {
             "number",
             (value) => typeof value === "number",
             {
-                message: "Must be a type of number"
+                message: number.default
             }
         );
     }
 
-    min(num: number) {
+    min(num: number, message?: string) {
         return this.rule(
             "min",
             (value) => typeof value === "number" && value >= num,
             {
-                message: `Must be greater than or equal to ${num}`,
+                message: message ?? number.min,
                 value: num,
             }
         );
     }
 
-    max(num: number) {
+    max(num: number, message?: string) {
         return this.rule(
-            "min",
+            "max",
             (value) => typeof value === "number" && value <= num,
             {
-                message: `Must be less than or equal to ${num}`,
+                message: message ?? number.max,
                 value: num,
             }
         );

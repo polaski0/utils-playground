@@ -28,7 +28,7 @@ describe("object schema validator", () => {
             name: s.string(),
             age: s.number(),
             address: s.object({
-                zipCode: s.string().optional(),
+                zipCode: s.string(),
                 street_1: s.string(),
             }).optional(),
         });

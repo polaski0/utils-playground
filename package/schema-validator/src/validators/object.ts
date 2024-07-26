@@ -17,15 +17,11 @@ export class ObjectV extends SchemaV {
             output: value
         };
 
-        if (this._isEmpty(value) && this._options.required) {
-            _result.valid = false;
-        }
-
-        if (value && typeof value === "object" && !this._isEmpty(value)) {
+        if (!this._isEmpty(value) || this._options.required) {
             for (const key in this._schema) {
                 const _schema = this._schema[key];
-                const result = _schema.validate(value[key]);
 
+                const result = _schema.validate(value ? value[key] : value);
                 if (!result.valid && result.issues) {
                     if (!this._issues) {
                         this._issues = [];
