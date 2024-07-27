@@ -29,7 +29,7 @@ export class ObjectV extends SchemaV {
 
                     _result.valid = false;
                     for (const issue of result.issues) {
-                        this._issues.push({ key, ...issue })
+                        this._issues.push(issue)
                     }
                 }
             }
