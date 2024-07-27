@@ -1,6 +1,12 @@
 # Schema Validator
 
-This is a schema validator based on a JavaScript library called [vlid](https://github.com/vlucas/vlid).
+This is a schema validator library
+
+## Based On
+
+Different libraries I used as a reference material:
+* [valita](https://github.com/badrap/valita)
+* [zod](https://github.com/colinhacks/zod)
 
 ## Purpose
 
