@@ -23,6 +23,6 @@ describe("object", () => {
         const result = schema.validate({
             first_name: "John"
         })
-        console.log(result?.issues)
+        // console.log(result?.issues)
     })
 })

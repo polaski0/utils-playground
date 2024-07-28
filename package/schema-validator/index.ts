@@ -105,7 +105,7 @@ export class SchemaVal {
         return this;
     }
 
-    validate<T>(value?: T, params?: { path: string[] }): Result<T> {
+    validate<T>(value?: T, params?: { path: string[] }) {
         const _result: Result<T> = {
             valid: true,
             output: value,
@@ -183,7 +183,7 @@ export class ObjectVal extends SchemaVal {
         this._path = []
     }
 
-    validate<T extends Record<any, any>>(value: T): Result<T> {
+    validate<T extends Record<any, any>>(value: T) {
         const _result: Result<T> = {
             valid: true,
             output: value,
@@ -213,6 +213,18 @@ export class ObjectVal extends SchemaVal {
         }
 
         _result.issues = this._issues
+
+        // Fix returning of Errors
+        if (_result.issues) {
+            const err = new ValError(_result)
+            const formattedErr = err.format()
+
+            for (const key in formattedErr) {
+                // @ts-ignore
+                console.log(key, formattedErr[key])
+            }
+        }
+
         return _result
     }
 }
@@ -249,6 +261,43 @@ export class StringVal extends SchemaVal {
                 value: max,
             }
         );
+    }
+}
+
+export class ValError<Input> {
+    _result: Result<Input>
+    constructor(result: Result<Input>) {
+        this._result = result
+    }
+
+    format() {
+        const formatted: Record<string, any> = {}
+
+        if (!this._result.issues) {
+            return this._result;
+        }
+
+        for (const issue of this._result.issues) {
+            if (!issue.path) {
+                continue;
+            }
+
+            let currObject = formatted
+            for (const key of issue.path) {
+                if (!currObject[key]) {
+                    currObject[key] = {
+                        _errors: []
+                    }
+                }
+                currObject = currObject[key]
+            }
+
+            currObject._errors.push({
+                message: issue.message,
+            })
+        }
+
+        return formatted;
     }
 }
 
