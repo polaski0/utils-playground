@@ -216,11 +216,10 @@ class ValidationError {
                     }
                 }
 
-                if (i === issue.path.length - 1) {
-                    currObject[key]._errors.push({ name: issue.name, message: issue.message })
-                }
-
                 currObject = currObject[key]
+                if (i === issue.path.length - 1) {
+                    currObject._errors.push({ name: issue.name, message: issue.message })
+                }
             }
         }
 
