@@ -4,7 +4,7 @@ describe("string", () => {
     it("should validate to true", () => {
         const schema = v.string()
 
-        const result = schema.validate("Foo")
+        const result = schema.validate(1)
         console.log("Success", result)
         expect(result.valid).toBe(true)
     })
@@ -16,7 +16,7 @@ describe("string", () => {
             schema.validate(1)
         } catch (err) {
             if (err instanceof v.ValError) {
-                console.log("Error", err._result)
+                console.log("Error", err)
             }
         }
 
