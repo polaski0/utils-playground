@@ -64,15 +64,15 @@ describe("object", () => {
             objSchema.validate({
                 name: "J",
                 address: {
-                    street: "123"
+                    street: "123",
                 }
             })
         } catch (err) {
             if (err instanceof v.ValidationError) {
-                console.log("Error Result", err._result.issues)
+                console.log("Error Result", err.format())
             }
         }
 
-        // expect(() => objSchema.validate({})).toThrow(v.ValidationError)
+        expect(() => objSchema.validate({})).toThrow(v.ValidationError)
     })
 })

@@ -198,6 +198,34 @@ class ValidationError {
     constructor(result: ParseReturn) {
         this._result = result
     }
+
+    format() {
+        // Fix typings
+        const formatted: Record<any, any> = {}
+        const issues = this._result.issues
+
+        for (const issue of issues) {
+            if (!issue.path) continue;
+
+            let currObject = formatted;
+            for (let i = 0; i < issue.path.length; i++) {
+                const key = issue.path[i]
+                if (!currObject[key]) {
+                    currObject[key] = {
+                        _errors: []
+                    }
+                }
+
+                if (i === issue.path.length - 1) {
+                    currObject[key]._errors.push({ name: issue.name, message: issue.message })
+                }
+
+                currObject = currObject[key]
+            }
+        }
+
+        return formatted
+    }
 }
 
 export const v = {
