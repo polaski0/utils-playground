@@ -1,5 +1,6 @@
 type ParseInput = {
     input: any;
+    params?: Record<any, any>; // Fix params
 }
 
 type ParseReturn = {
@@ -20,9 +21,9 @@ type Options = {
 
 type Issue = {
     name: string;
-    path?: string[];
     found: unknown;
     message: string;
+    path?: string[];
 }
 
 
@@ -33,17 +34,6 @@ abstract class Schema<Output = unknown> {
     _rules: Rule[];
     _options: Options;
     _issues: Issue[];
-
-    // Fix _parse abstract method due to following reasons:
-    //  -   Needs to call the _typeCheck method in all _parse method, causing
-    //      redundancy and more error prone when being extended
-    //  -   Each _parse method that does not require recursive parsing capability
-    //      such as string, number, etc. will redundantly call the same function
-    //      that goes through the _rules array just to check the method
-    //
-    //  In short, create a better function that can be used globally without the subclasses
-    //  needing to repeat the same methods over and over again
-    // abstract _parse(args: ParseInput): ParseReturn
 
     constructor({
         type,
@@ -68,21 +58,24 @@ abstract class Schema<Output = unknown> {
             issues: []
         }
 
+        // Fix pushing of issue to determine if wrong type or is missing required value
         if (!this.isType(args.input)) {
             this._addIssue({
-                message: `Invalid input`,
-                name: "invalid type",
+                message: `The type supplied is invalid.`,
+                name: "invalid_type",
                 found: args.input,
+                ...args.params
             })
-        }
-
-        for (const rule of this._rules) {
-            if (!rule.cb(args.input)) {
-                this._addIssue({
-                    message: rule.message,
-                    name: rule.name,
-                    found: args.input,
-                })
+        } else {
+            for (const rule of this._rules) {
+                if (!rule.cb(args.input)) {
+                    this._addIssue({
+                        message: rule.message,
+                        name: rule.name,
+                        found: args.input,
+                        ...args.params
+                    })
+                }
             }
         }
 
@@ -115,12 +108,7 @@ abstract class Schema<Output = unknown> {
     }
 
     _addIssue(issue: Issue) {
-        if (!this._issues) {
-            this._issues = [];
-        }
-
         this._issues.push(issue);
-        return this;
     }
 
     _addRule(rule: Rule) {
@@ -131,6 +119,7 @@ abstract class Schema<Output = unknown> {
 
 class ObjectSchema<T extends Record<any, Schema<T>>> extends Schema<T> {
     _schema: T;
+    _path: string[];
 
     constructor(schema: T) {
         super({
@@ -138,6 +127,7 @@ class ObjectSchema<T extends Record<any, Schema<T>>> extends Schema<T> {
             check: (v: unknown) => typeof v === "object"
         });
         this._schema = schema;
+        this._path = [];
     }
 
     _parse(args: ParseInput): ParseReturn {
@@ -150,11 +140,30 @@ class ObjectSchema<T extends Record<any, Schema<T>>> extends Schema<T> {
 
         for (const key in this._schema) {
             const _schema = this._schema[key]
-            const _result = _schema._parse({ input: _value ? _value[key] : _value })
+            const _result = _schema._parse({
+                input: _value ? _value[key] : _value,
+                params: {
+                    path: [key],
+                }
+            })
+
+            if (_schema instanceof ObjectSchema) {
+                this._path.push(key)
+
+                if (!this.isType(_value ? _value[key] : _value)) {
+                    this._addIssue({
+                        message: `The object supplied is invalid`,
+                        name: "invalid_type",
+                        found: args.input,
+                        path: this._path,
+                    })
+                }
+            }
 
             if (!_result.valid) {
                 for (const issue of _result.issues) {
-                    this._addIssue(issue)
+                    const path = issue.path ? [...this._path, ...issue.path] : [key]
+                    this._addIssue({ ...issue, path })
                 }
             }
         }

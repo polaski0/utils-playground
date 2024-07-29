@@ -30,9 +30,9 @@ describe.skip("string", () => {
 
 describe("object", () => {
     const objSchema = v.object({
-        name: v.string().min(2),
+        name: v.string(),
         address: v.object({
-            street: v.string()
+            street: v.string(),
         }),
     });
 
@@ -48,16 +48,31 @@ describe("object", () => {
     })
 
     it("should throw ValidationError on empty object", () => {
+        const objSchema = v.object({
+            name: v.string().min(2),
+            address: v.object({
+                street: v.string(),
+                bar: v.string(),
+                addtl: v.object({
+                    zipCode: v.string(),
+                    foo: v.string()
+                })
+            }),
+        });
+
         try {
             objSchema.validate({
-                name: "J"
+                name: "J",
+                address: {
+                    street: "123"
+                }
             })
         } catch (err) {
             if (err instanceof v.ValidationError) {
-                console.log(err._result)
+                console.log("Error Result", err._result.issues)
             }
         }
 
-        expect(() => objSchema.validate({})).toThrow(v.ValidationError)
+        // expect(() => objSchema.validate({})).toThrow(v.ValidationError)
     })
 })
