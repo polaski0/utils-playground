@@ -28,7 +28,8 @@ type Issue = {
 
 type Result<T> = {
     valid: boolean;
-    value: T
+    value: T;
+    errors?: ValidationError<T>
 }
 
 abstract class Schema<Output = unknown> {
@@ -100,13 +101,20 @@ abstract class Schema<Output = unknown> {
 
     validate(input?: unknown): Result<Output> {
         const result = this._parse({ input })
-        if (!result.valid) {
-            throw new ValidationError(result)
-        }
-        return {
+        // if (!result.valid) {
+        //     throw new ValidationError<Output>(result)
+        // }
+
+        const returnValue: Result<Output> = {
             valid: result.valid,
-            value: result.input
-        };
+            value: result.input,
+        }
+
+        if (!result.valid) {
+            returnValue.errors = new ValidationError<Output>(result)
+        }
+
+        return returnValue
     }
 
     optional() {
@@ -153,6 +161,14 @@ class ObjectSchema<T extends ObjectShape = ObjectShape> extends Schema<ObjectOut
             issues: []
         }
 
+        if (!this.isType(_value)) {
+            this._addIssue({
+                message: `The object supplied is invalid`,
+                name: "invalid_type",
+                found: args.input,
+            })
+        }
+
         for (const key in this._schema) {
             const _schema = this._schema[key]
             const _result = _schema._parse({
@@ -164,15 +180,6 @@ class ObjectSchema<T extends ObjectShape = ObjectShape> extends Schema<ObjectOut
 
             if (_schema instanceof ObjectSchema) {
                 this._path.push(key)
-
-                if (!this.isType(_value ? _value[key] : _value)) {
-                    this._addIssue({
-                        message: `The object supplied is invalid`,
-                        name: "invalid_type",
-                        found: args.input,
-                        path: this._path,
-                    })
-                }
             }
 
             if (!_result.valid) {
@@ -199,32 +206,64 @@ class StringSchema extends Schema<string> {
         });
     }
 
-    min(min: number) {
+    min(min: number, message?: string) {
         return this._addRule({
             name: "min",
             cb: (v: unknown) => typeof v === "string" && v.length >= min,
-            message: `Must have a minimum length of ${min}`
+            message: message ?? `Must have a minimum length of ${min}`
         })
     }
 }
 
+class NumberSchema extends Schema<number> {
+    constructor() {
+        super({
+            type: "number",
+            check: (v: unknown) => typeof v === "number"
+        });
+    }
+}
+
+type RecursiveErrorFormatting<T> = T extends ObjectShape ? {
+    [K in keyof T]: FormattedError<T[K]>
+} : T extends object ? {
+    [K in keyof T]: FormattedError<T[K]>
+} : unknown
+
+type FormattedError<T> = {
+    _errors: ErrorFormat[]
+} & RecursiveErrorFormatting<T>
+
+type ErrorFormat = {
+    name: string;
+    message: string;
+}
+
 // Fix typings
-class ValidationError {
+class ValidationError<T = any> {
     _result: ParseReturn
     constructor(result: ParseReturn) {
         this._result = result
     }
 
-    format() {
-        const formatted: Record<any, any> = {}
+    format(): FormattedError<T> {
+        const formatted: FormattedError<T> = {
+            _errors: [] as ErrorFormat[]
+        } as FormattedError<T>
         const issues = this._result.issues
 
         for (const issue of issues) {
-            if (!issue.path) continue;
+            let currObject: any = formatted // Fix typings
+            if (!issue.path) {
+                currObject._errors.push({
+                    name: issue.name,
+                    message: issue.message
+                });
+                continue;
+            }
 
-            let currObject = formatted;
             for (let i = 0; i < issue.path.length; i++) {
-                const key = issue.path[i]
+                const key = issue.path[i] as keyof T
                 if (!currObject[key]) {
                     currObject[key] = {
                         _errors: []
@@ -233,18 +272,64 @@ class ValidationError {
 
                 currObject = currObject[key]
                 if (i === issue.path.length - 1) {
-                    currObject._errors.push({ name: issue.name, message: issue.message })
+                    currObject._errors.push({
+                        name: issue.name,
+                        message: issue.message
+                    });
                 }
             }
         }
 
         return formatted
     }
+
+    //  format(): FormattedError<T> {
+    //      const formatted: FormattedError<T> = {} as FormattedError<T>
+    //      const issues = this._result.issues
+
+    //      formatted._errors = []
+
+    //      for (const issue of issues) {
+    //          let currObject = formatted
+    //          if (!issue.path) {
+    //              currObject._errors.push({
+    //                  name: issue.name,
+    //                  message: issue.message
+    //              });
+    //              continue;
+    //          }
+
+    //          for (let i = 0; i < issue.path.length; i++) {
+    //              const key = issue.path[i] as keyof T
+    //              if (!currObject[key]) {
+    //                  // currObject[key] = {
+    //                  //     _errors: []
+    //                  // }
+
+    //                  currObject[key] = {
+    //                      _errors: []
+    //                  }
+    //              }
+
+    //              // currObject = currObject[key]
+    //              currObject = currObject[key]
+    //              if (i === issue.path.length - 1) {
+    //                  currObject._errors.push({
+    //                      name: issue.name,
+    //                      message: issue.message
+    //                  });
+    //              }
+    //          }
+    //      }
+
+    //      return formatted
+    //  }
 }
 
 export const v = {
     object: <T>(schema: T extends ObjectShape ? T : never) => new ObjectSchema(schema),
     string: () => new StringSchema(),
+    number: () => new NumberSchema(),
     ValidationError,
 }
 

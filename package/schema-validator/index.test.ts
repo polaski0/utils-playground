@@ -1,6 +1,6 @@
 import { v } from "."
 
-describe.skip("string", () => {
+describe("string", () => {
     const strSchema = v.string();
 
     it("should return true", () => {
@@ -15,16 +15,16 @@ describe.skip("string", () => {
     })
 
     it("should throw ValidationError on empty input", () => {
-        expect(() => strSchema.validate()).toThrow(v.ValidationError)
+        expect(strSchema.validate().errors).not.toBeUndefined()
     })
 
     it("should throw ValidationError on wrong input type", () => {
-        expect(() => strSchema.validate(1)).toThrow(v.ValidationError)
+        expect(strSchema.validate(1).errors).not.toBeUndefined()
     })
 
     it("should throw ValidationError on optional but wrong input type", () => {
         const strSchema = v.string().optional();
-        expect(() => strSchema.validate(1)).toThrow(v.ValidationError)
+        expect(strSchema.validate(1).errors).not.toBeUndefined()
     })
 })
 
@@ -36,7 +36,7 @@ describe("object", () => {
         }),
     });
 
-    it.skip("should return true", () => {
+    it("should return true", () => {
         const result = objSchema.validate({
             name: "John",
             address: {
@@ -49,6 +49,7 @@ describe("object", () => {
     it("should throw ValidationError on empty object", () => {
         const objSchema = v.object({
             name: v.string().min(2),
+            age: v.number(),
             address: v.object({
                 street: v.string(),
                 bar: v.string(),
@@ -59,21 +60,14 @@ describe("object", () => {
             }),
         });
 
-        try {
-            const result = objSchema.validate({
-                name: "J",
-                address: {
-                    street: "123",
-                }
-            })
-
-            const rawValue = result.value
-        } catch (err) {
-            if (err instanceof v.ValidationError) {
-                console.log("Error Result", err.format())
+        const result = objSchema.validate({
+            name: "J",
+            age: "",
+            address: {
+                street: "123",
             }
-        }
+        })
 
-        expect(() => objSchema.validate({})).toThrow(v.ValidationError)
+        expect(result.errors).not.toBeUndefined()
     })
 })
