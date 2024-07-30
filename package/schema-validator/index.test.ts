@@ -43,7 +43,6 @@ describe("object", () => {
                 street: "123"
             }
         })
-        console.log("Object Result", result)
         expect(result.valid).toBe(true)
     })
 
@@ -61,12 +60,14 @@ describe("object", () => {
         });
 
         try {
-            objSchema.validate({
+            const result = objSchema.validate({
                 name: "J",
                 address: {
                     street: "123",
                 }
             })
+
+            const rawValue = result.value
         } catch (err) {
             if (err instanceof v.ValidationError) {
                 console.log("Error Result", err.format())

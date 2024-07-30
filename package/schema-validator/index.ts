@@ -4,7 +4,7 @@ type ParseInput = {
 }
 
 type ParseReturn = {
-    input: unknown;
+    input: any;
     valid: boolean;
     issues: Issue[];
 }
@@ -26,6 +26,10 @@ type Issue = {
     path?: string[];
 }
 
+type Result<T> = {
+    valid: boolean;
+    value: T
+}
 
 abstract class Schema<Output = unknown> {
     _type: string;
@@ -94,12 +98,15 @@ abstract class Schema<Output = unknown> {
         return this._typeCheck(input)
     }
 
-    validate(input?: unknown) {
+    validate(input?: unknown): Result<Output> {
         const result = this._parse({ input })
         if (!result.valid) {
             throw new ValidationError(result)
         }
-        return result;
+        return {
+            valid: result.valid,
+            value: result.input
+        };
     }
 
     optional() {
@@ -117,7 +124,15 @@ abstract class Schema<Output = unknown> {
     }
 }
 
-class ObjectSchema<T extends Record<any, Schema<T>>> extends Schema<T> {
+type ObjectShape = Record<string, Schema>;
+
+type Infer<T extends Schema> = T extends Schema<infer I> ? I : never;
+
+type ObjectOutput<T extends ObjectShape = ObjectShape> = {
+    [K in keyof T]: Infer<T[K]>
+};
+
+class ObjectSchema<T extends ObjectShape = ObjectShape> extends Schema<ObjectOutput<T>> {
     _schema: T;
     _path: string[];
 
@@ -193,6 +208,7 @@ class StringSchema extends Schema<string> {
     }
 }
 
+// Fix typings
 class ValidationError {
     _result: ParseReturn
     constructor(result: ParseReturn) {
@@ -200,7 +216,6 @@ class ValidationError {
     }
 
     format() {
-        // Fix typings
         const formatted: Record<any, any> = {}
         const issues = this._result.issues
 
@@ -228,7 +243,8 @@ class ValidationError {
 }
 
 export const v = {
-    object: (schema: Record<any, Schema<any>>) => new ObjectSchema(schema),
+    object: <T>(schema: T extends ObjectShape ? T : never) => new ObjectSchema(schema),
     string: () => new StringSchema(),
     ValidationError,
 }
+
