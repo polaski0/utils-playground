@@ -1,6 +1,6 @@
 type ParseInput = {
     input: any;
-    params?: Record<any, any>; // Fix params
+    params?: ExtendedIssue
 }
 
 type ParseReturn = {
@@ -23,6 +23,9 @@ type Issue = {
     name: string;
     found: unknown;
     message: string;
+} & ExtendedIssue
+
+type ExtendedIssue = {
     path?: string[];
 }
 
@@ -101,10 +104,6 @@ abstract class Schema<Output = unknown> {
 
     validate(input?: unknown): Result<Output> {
         const result = this._parse({ input })
-        // if (!result.valid) {
-        //     throw new ValidationError<Output>(result)
-        // }
-
         const returnValue: Result<Output> = {
             valid: result.valid,
             value: result.input,
