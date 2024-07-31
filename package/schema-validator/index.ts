@@ -66,14 +66,22 @@ abstract class Schema<Output = unknown> {
             issues: []
         }
 
-        // Fix pushing of issue to determine if wrong type or is missing required value
         if (!this.isType(args.input)) {
-            this._addIssue({
-                message: `The type supplied is invalid.`,
-                name: "invalid_type",
-                found: args.input,
-                ...args.params
-            })
+            if (args.input) {
+                this._addIssue({
+                    message: `The type supplied is invalid.`,
+                    name: "invalid_type",
+                    found: args.input,
+                    ...args.params
+                })
+            } else {
+                this._addIssue({
+                    message: `Required`,
+                    name: "required",
+                    found: args.input,
+                    ...args.params
+                })
+            }
         } else {
             for (const rule of this._rules) {
                 if (!rule.cb(args.input)) {
@@ -176,7 +184,9 @@ class ObjectSchema<T extends ObjectShape, U = ObjectOutput<T>> extends Schema<U>
 
                 if (!_result.valid) {
                     for (const issue of _result.issues) {
-                        const path = issue.path ? [...this._path, ...issue.path] : [key]
+                        const path = issue.path
+                            ? [...this._path, ...issue.path]
+                            : [key]
                         this._addIssue({ ...issue, path })
                     }
                 }
@@ -223,6 +233,44 @@ class NumberSchema extends Schema<number> {
     }
 }
 
+class ArraySchema<T extends Schema> extends Schema<Array<T>> {
+    _schema: T
+    constructor(schema: T) {
+        super({
+            type: "array",
+            check: (v: unknown) => v instanceof Array
+        });
+        this._schema = schema;
+    }
+
+    _parse(args: ParseInput): ParseReturn {
+        const _values = args.input;
+        const result: ParseReturn = {
+            input: _values,
+            valid: true,
+            issues: []
+        }
+
+        if (this._options.required || _values) {
+            for (const value of _values) {
+                const _result = this._schema._parse({
+                    input: value
+                })
+
+                if (!_result.valid) {
+                    this._issues = _result.issues
+                }
+            }
+        }
+
+        result.issues = this._issues
+        if (result.issues.length) {
+            result.valid = false
+        }
+        return result
+    };
+}
+
 type RecursiveErrorFormatting<T> = T extends ObjectShape ? {
     [K in keyof T]?: FormattedError<T[K]>
 } : T extends object ? {
@@ -238,7 +286,7 @@ type ErrorFormat = {
     message: string;
 }
 
-// Fix typings
+// Fix typings and type assertions
 class ValidationError<T = any> {
     _result: ParseReturn
     constructor(result: ParseReturn) {
@@ -246,19 +294,19 @@ class ValidationError<T = any> {
     }
 
     format(): FormattedError<T> {
-        const formatted: FormattedError<T> = {
-            _errors: [] as ErrorFormat[]
+        const formatted = {
+            _errors: []
         } as FormattedError<T>
         const issues = this._result.issues
 
         for (const issue of issues) {
-            let currObject: any = formatted // Fix typings
+            let currObject: any = formatted
             if (!issue.path) {
                 currObject._errors.push({
                     name: issue.name,
                     message: issue.message
                 });
-                continue;
+                continue
             }
 
             for (let i = 0; i < issue.path.length; i++) {
@@ -287,5 +335,6 @@ export const v = {
     object: <T>(schema: T extends ObjectShape ? T : never) => new ObjectSchema(schema),
     string: () => new StringSchema(),
     number: () => new NumberSchema(),
+    array: <T>(schemas: T extends Schema ? T : never) => new ArraySchema(schemas),
     ValidationError,
 }
