@@ -333,8 +333,8 @@ class ValidationError<T = any> {
 
 export const v = {
     object: <T>(schema: T extends ObjectShape ? T : never) => new ObjectSchema(schema),
+    array: <T>(schemas: T extends Schema ? T : never) => new ArraySchema(schemas),
     string: () => new StringSchema(),
     number: () => new NumberSchema(),
-    array: <T>(schemas: T extends Schema ? T : never) => new ArraySchema(schemas),
     ValidationError,
 }
