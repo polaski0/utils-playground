@@ -1,11 +1,29 @@
 import { v } from "."
 
-describe.skip("string", () => {
+describe("string", () => {
     const strSchema = v.string();
 
     it("should return true", () => {
         const result = strSchema.validate("asdf")
         expect(result.valid).toBe(true)
+    })
+
+    it("custom validation should return true", () => {
+        const strSchema = v.string().custom(
+            (v) => v === "asdf",
+            "Equal to asdf"
+        );
+        const result = strSchema.validate("asdf")
+        expect(result.valid).toBe(true)
+    })
+
+    it("custom validation should return false", () => {
+        const strSchema = v.string().custom(
+            (v) => v === "asdf",
+            "Not equal to asdf"
+        );
+        const result = strSchema.validate("qwe")
+        expect(result.valid).toBe(false)
     })
 
     it("should allow undefined value and return true", () => {
@@ -28,7 +46,7 @@ describe.skip("string", () => {
     })
 })
 
-describe.skip("object", () => {
+describe("object", () => {
     it("should return true", () => {
         const objSchema = v.object({
             name: v.string(),

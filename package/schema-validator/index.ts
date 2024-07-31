@@ -129,6 +129,14 @@ abstract class Schema<Output = unknown> {
         return this;
     }
 
+    custom(cb: (v: Output) => boolean, message: string) {
+        return this._addRule({
+            name: "custom_error",
+            cb: cb,
+            message: message
+        })
+    }
+
     _addIssue(issue: Issue) {
         this._issues.push(issue);
     }
@@ -222,6 +230,14 @@ class StringSchema extends Schema<string> {
             message: message ?? `Must have a minimum length of ${min}`
         })
     }
+
+    max(max: number, message?: string) {
+        return this._addRule({
+            name: "min",
+            cb: (v: unknown) => typeof v === "string" && v.length >= max,
+            message: message ?? `Must have a minimum length of ${max}`
+        })
+    }
 }
 
 class NumberSchema extends Schema<number> {
@@ -286,7 +302,6 @@ type ErrorFormat = {
     message: string;
 }
 
-// Fix typings and type assertions
 class ValidationError<T = any> {
     _result: ParseReturn
     constructor(result: ParseReturn) {
