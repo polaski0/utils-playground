@@ -146,12 +146,13 @@ class ObjectSchema<T extends ObjectShape = ObjectShape> extends Schema<ObjectOut
     constructor(schema: T) {
         super({
             type: "object",
-            check: (v: unknown) => typeof v === "object"
+            check: (v: unknown) => typeof v === "object" && v !== null
         });
         this._schema = schema;
         this._path = [];
     }
 
+    // Fix parsing where the object is optional
     _parse(args: ParseInput): ParseReturn {
         const _value = args.input;
         const result: ParseReturn = {
@@ -160,33 +161,33 @@ class ObjectSchema<T extends ObjectShape = ObjectShape> extends Schema<ObjectOut
             issues: []
         }
 
-        if (!this.isType(_value)) {
+        if (this._options.required || _value) {
+            for (const key in this._schema) {
+                const _schema = this._schema[key]
+                const _result = _schema._parse({
+                    input: _value ? _value[key] : _value,
+                    params: {
+                        path: [key],
+                    }
+                })
+
+                if (_schema instanceof ObjectSchema) {
+                    this._path.push(key)
+                }
+
+                if (!_result.valid) {
+                    for (const issue of _result.issues) {
+                        const path = issue.path ? [...this._path, ...issue.path] : [key]
+                        this._addIssue({ ...issue, path })
+                    }
+                }
+            }
+        } else if (!this.isType(_value)) {
             this._addIssue({
                 message: `The object supplied is invalid`,
                 name: "invalid_type",
                 found: args.input,
             })
-        }
-
-        for (const key in this._schema) {
-            const _schema = this._schema[key]
-            const _result = _schema._parse({
-                input: _value ? _value[key] : _value,
-                params: {
-                    path: [key],
-                }
-            })
-
-            if (_schema instanceof ObjectSchema) {
-                this._path.push(key)
-            }
-
-            if (!_result.valid) {
-                for (const issue of _result.issues) {
-                    const path = issue.path ? [...this._path, ...issue.path] : [key]
-                    this._addIssue({ ...issue, path })
-                }
-            }
         }
 
         result.issues = this._issues
@@ -224,9 +225,9 @@ class NumberSchema extends Schema<number> {
 }
 
 type RecursiveErrorFormatting<T> = T extends ObjectShape ? {
-    [K in keyof T]: FormattedError<T[K]>
+    [K in keyof T]?: FormattedError<T[K]>
 } : T extends object ? {
-    [K in keyof T]: FormattedError<T[K]>
+    [K in keyof T]?: FormattedError<T[K]>
 } : unknown
 
 type FormattedError<T> = {
@@ -281,48 +282,6 @@ class ValidationError<T = any> {
 
         return formatted
     }
-
-    //  format(): FormattedError<T> {
-    //      const formatted: FormattedError<T> = {} as FormattedError<T>
-    //      const issues = this._result.issues
-
-    //      formatted._errors = []
-
-    //      for (const issue of issues) {
-    //          let currObject = formatted
-    //          if (!issue.path) {
-    //              currObject._errors.push({
-    //                  name: issue.name,
-    //                  message: issue.message
-    //              });
-    //              continue;
-    //          }
-
-    //          for (let i = 0; i < issue.path.length; i++) {
-    //              const key = issue.path[i] as keyof T
-    //              if (!currObject[key]) {
-    //                  // currObject[key] = {
-    //                  //     _errors: []
-    //                  // }
-
-    //                  currObject[key] = {
-    //                      _errors: []
-    //                  }
-    //              }
-
-    //              // currObject = currObject[key]
-    //              currObject = currObject[key]
-    //              if (i === issue.path.length - 1) {
-    //                  currObject._errors.push({
-    //                      name: issue.name,
-    //                      message: issue.message
-    //                  });
-    //              }
-    //          }
-    //      }
-
-    //      return formatted
-    //  }
 }
 
 export const v = {

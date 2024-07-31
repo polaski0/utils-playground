@@ -56,17 +56,20 @@ describe("object", () => {
                 addtl: v.object({
                     zipCode: v.string(),
                     foo: v.string()
-                })
+                }).optional()
             }),
         });
 
         const result = objSchema.validate({
             name: "J",
-            age: "",
+            age: 1,
             address: {
                 street: "123",
+                addtl: {}
             }
         })
+
+        console.log(result.errors?._result.issues)
 
         expect(result.errors).not.toBeUndefined()
     })
