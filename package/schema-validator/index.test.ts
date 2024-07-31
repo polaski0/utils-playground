@@ -69,8 +69,6 @@ describe("object", () => {
             }
         })
 
-        console.log(result.errors?._result.issues)
-
         expect(result.errors).not.toBeUndefined()
     })
 })

@@ -135,11 +135,11 @@ type ObjectShape = Record<string, Schema>;
 
 type Infer<T extends Schema> = T extends Schema<infer I> ? I : never;
 
-type ObjectOutput<T extends ObjectShape = ObjectShape> = {
+type ObjectOutput<T> = T extends ObjectShape ? {
     [K in keyof T]: Infer<T[K]>
-};
+} : never;
 
-class ObjectSchema<T extends ObjectShape = ObjectShape> extends Schema<ObjectOutput<T>> {
+class ObjectSchema<T extends ObjectShape, U = ObjectOutput<T>> extends Schema<U> {
     _schema: T;
     _path: string[];
 
@@ -152,7 +152,6 @@ class ObjectSchema<T extends ObjectShape = ObjectShape> extends Schema<ObjectOut
         this._path = [];
     }
 
-    // Fix parsing where the object is optional
     _parse(args: ParseInput): ParseReturn {
         const _value = args.input;
         const result: ParseReturn = {
@@ -290,4 +289,3 @@ export const v = {
     number: () => new NumberSchema(),
     ValidationError,
 }
-
