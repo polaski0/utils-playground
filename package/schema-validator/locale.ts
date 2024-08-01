@@ -39,7 +39,7 @@ export interface StringLocale {
 
 export const common: Required<CommonLocale> = {
     default: "Invalid field.",
-    required: "Field is required." // To be changed
+    required: "Required."
 }
 
 export const array: Required<ArrayLocale> = {

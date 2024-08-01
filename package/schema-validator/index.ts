@@ -1,600 +1,404 @@
 import {
-    SchemaV,
-    StringV,
-    NumberV,
-    ObjectV,
-    BooleanV,
-    ArrayV,
-    DateV
-} from "./src";
+    common,
+    array,
+    boolean,
+    date,
+    object,
+    number,
+    string
+} from "./locale"
 
-export const s = {
-    string: () => new StringV(),
-    number: () => new NumberV(),
-    object: (schema: Record<string | number | symbol, SchemaV>) => new ObjectV(schema),
-    boolean: () => new BooleanV(),
-    array: () => new ArrayV(),
-    date: () => new DateV(),
-};
+import {
+    replaceString
+} from "./utils"
 
-// -- DO NOT MODIFY ABOVE THE LINE --
-
-export type Options = {
-    required: boolean,
-};
-
-export type Rule = {
-    name: string,
-    cb: (value: any) => boolean,
-    message: string,
-    value?: unknown,
-};
-
-export type Value = string | number | Record<any, any> | undefined | null;
-
-export type Result<T> = {
-    valid: boolean,
-    output?: T,
-    issues: Issue[],
+type ParseInput = {
+    input: any
+    params?: ExtendedIssue
 }
 
-export type Issue = {
-    type: string,
-    input: unknown,
-    expected: unknown,
-    received: unknown,
-    message: string,
-    path?: string[] | null
-    _key?: string;
+type ParseReturn = {
+    input: any
+    valid: boolean
+    issues: Issue[]
 }
 
-abstract class SchemaVal {
-    _rules: Rule[];
-    _options: Options;
-    _issues: Issue[];
-    _typeCheck: (v: unknown) => boolean;
-    _type: string;
+type Rule = {
+    name: string
+    cb: (value: any) => boolean
+    message: string
+    value?: unknown
+}
+
+type Options = {
+    required: boolean
+}
+
+type Issue = {
+    name: string
+    found: unknown
+    message: string
+} & ExtendedIssue
+
+type ExtendedIssue = {
+    path?: string[]
+    value?: unknown
+}
+
+type Result<T> = {
+    valid: boolean
+    value: T
+    errors?: ValidationError<T>
+}
+
+abstract class Schema<Output = unknown> {
+    _type: string
+    _typeCheck: (v: unknown) => boolean
+    _typeMessage: string
+
+    _rules: Rule[]
+    _options: Options
+    _issues: Issue[]
 
     constructor({
         type,
         check,
+        message
     }: {
-        type: string;
-        check: (v: unknown) => boolean;
+        type: string
+        check: (v: unknown) => boolean
+        message?: string
     }) {
-        this._rules = [];
-        this._issues = [];
+        this._rules = []
+        this._issues = []
+
+        this._type = type
         this._typeCheck = check
-        this._type = type;
+        this._typeMessage = message ?? common.default
+
         this._options = {
-            required: true,
-        };
-
-        // Remove
-        // this.required()
-    }
-
-    abstract _parse(value: {
-        data: any;
-        params?: {
-            path?: string[]
+            required: true
         }
     }
-    ): Result<unknown>
 
-    // Fix the way of checking the type
-    isType(v: unknown) {
-        if (v === null) {
-            if (this._options.required) return false;
+    _parse(args: ParseInput): ParseReturn {
+        const result: ParseReturn = {
+            valid: true,
+            input: args.input,
+            issues: []
         }
 
-        return this._typeCheck(v)
-    }
+        if (!this.isType(args.input)) {
+            if (args.input) {
+                this._addIssue({
+                    message: this._typeMessage,
+                    name: "invalid_type",
+                    found: args.input,
+                    ...args.params
+                })
+            } else {
+                this._addIssue({
+                    message: common.required,
+                    name: "required",
+                    found: args.input,
+                    ...args.params
+                })
+            }
+        } else {
+            for (const rule of this._rules) {
+                if (!rule.cb(args.input)) {
+                    const _issue = {
+                        message: rule.message,
+                        name: rule.name,
+                        found: args.input,
+                        ...args.params
+                    }
 
-    validate(data: unknown) {
-        const result = this._parse({ data })
-        if (!result.valid) {
-            throw new ValError(result)
+                    if (rule.value) {
+                        _issue.value = rule.value
+                    }
+
+                    this._addIssue(_issue)
+                }
+            }
+        }
+
+        result.issues = this._issues
+        if (result.issues.length) {
+            result.valid = false
         }
         return result
     }
 
-    rule(
-        name: string,
-        cb: (value: unknown) => boolean,
-        opts: {
-            message: string,
-            value?: unknown
-        },
-    ) {
-        const index = this._rules.findIndex((rule) => rule.name === name)
-        if (index === -1) {
-            this._rules.push({
-                name,
-                cb,
-                ...opts
-            });
-        } else {
-            this._rules[index] = {
-                name,
-                cb,
-                ...opts
-            };
+    isType(input: unknown) {
+        if (!input) {
+            if (!this._options.required && input === null) return true
+            if (!this._options.required && input === undefined) return true
+        }
+        return this._typeCheck(input)
+    }
+
+    validate(input?: unknown): Result<Output> {
+        const result = this._parse({ input })
+        const returnValue: Result<Output> = {
+            valid: result.valid,
+            value: result.input,
         }
 
-        return this;
+        if (!result.valid) {
+            returnValue.errors = new ValidationError<Output>(result)
+        }
+
+        return returnValue
     }
 
     optional() {
-        this._options.required = false;
-        return this;
+        this._options.required = false
+        return this
     }
 
-    _isEmpty<T>(value: T) {
-        if (value instanceof Array) {
-            return value.length > 0 ? false : true;
-        }
-
-        if (typeof value === "object" && value) {
-            return Object.entries(value).length > 0 ? false : true;
-        }
-
-        return !(value !== undefined && value !== null && value !== "");
+    custom(cb: (v: Output) => boolean, message: string) {
+        return this._addRule({
+            name: "custom_error",
+            cb: cb,
+            message: message
+        })
     }
 
-    _createError(
-        type: string,
-        input: unknown,
-        expected: unknown,
-        message: string,
-        params?: {
-            path?: string[],
-            _key?: string,
-        }
-    ) {
-        const _issue: Issue = {
-            type,
-            input,
-            expected,
-            received: input,
-            message,
-            ...params,
-        }
+    _addIssue(issue: Issue) {
+        const _issue = issue
 
-        if (!this._issues) {
-            this._issues = []
+        if (_issue.value) {
+            _issue.message = replaceString(
+                _issue.message,
+                new RegExp(`{${issue.name}}`),
+                _issue.value.toString()
+            )
         }
 
         this._issues.push(_issue)
-        return _issue;
     }
 
-    _removeRule(name: string) {
-        const index = this._rules.findIndex((r) => r.name === name);
-        if (index !== -1) {
-            this._rules.splice(index, 1);
-        }
+    _addRule(rule: Rule) {
+        this._rules.push(rule)
+        return this
     }
 }
 
-type ObjectSchema = Record<any, SchemaVal>;
+type ObjectShape = Record<string, Schema>
 
-export class ObjectVal extends SchemaVal {
-    _schema: ObjectSchema;
-    _path: string[];
+type Infer<T extends Schema> = T extends Schema<infer I> ? I : never
 
-    constructor(schema: ObjectSchema) {
+type ObjectOutput<T> = T extends ObjectShape ? {
+    [K in keyof T]: Infer<T[K]>
+} : never
+
+class ObjectSchema<T extends ObjectShape, U = ObjectOutput<T>> extends Schema<U> {
+    _schema: T
+    _path: string[]
+
+    constructor(schema: T) {
         super({
             type: "object",
-            check: (v) => typeof v === "object"
-        });
-
-        this._schema = schema;
+            check: (v: unknown) => typeof v === "object" && v !== null,
+            message: object.default,
+        })
+        this._schema = schema
         this._path = []
     }
 
-    _parse(value:
-        {
-            data: any;
-            params: {
-                path?: string[],
-            }
-        }
-    ): Result<Record<any, any>> {
-        const _result: Result<Record<any, any>> = {
+    _parse(args: ParseInput): ParseReturn {
+        const _value = args.input
+        const result: ParseReturn = {
+            input: _value,
             valid: true,
-            output: value.data,
             issues: []
-        };
+        }
 
-        if (!this._isEmpty(value)) {
+        if (this._options.required || _value) {
             for (const key in this._schema) {
-                const _schema = this._schema[key];
-                const _data = value.data ? value.data[key] : value.data
-                if (!_schema.isType(_data)) {
-                    this._createError("required", value.data, _schema._type, `Required`, { path: [key], _key: key })
-                }
-
-                const result = _schema._parse({ data: _data, params: { path: [key] } });
-
-                if (_schema instanceof ObjectVal) {
-                    this._path.push(key);
-                }
-
-                if (!result.valid && result.issues) {
-                    if (!this._issues) {
-                        this._issues = [];
+                const _schema = this._schema[key]
+                const _result = _schema._parse({
+                    input: _value ? _value[key] : _value,
+                    params: {
+                        path: [key],
                     }
+                })
 
-                    for (const issue of result.issues) {
-                        const path = issue.path ? [...this._path, ...issue.path] : [];
-                        this._issues.push({ ...issue, path });
+                if (_schema instanceof ObjectSchema) {
+                    this._path.push(key)
+                }
+
+                if (!_result.valid) {
+                    for (const issue of _result.issues) {
+                        const path = issue.path
+                            ? [...this._path, ...issue.path]
+                            : [key]
+                        this._addIssue({ ...issue, path })
                     }
                 }
             }
+        } else if (!this.isType(_value)) {
+            this._addIssue({
+                message: common.default,
+                name: "invalid_type",
+                found: args.input,
+            })
         }
 
-        _result.issues = this._issues
-        if (_result.issues.length) {
-            _result.valid = false;
+        result.issues = this._issues
+        if (result.issues.length) {
+            result.valid = false
         }
-        return _result
+        return result
     }
 }
 
-export class StringVal extends SchemaVal {
+class ArraySchema<T extends Schema> extends Schema<Array<T>> {
+    _schema: T
+    constructor(schema: T) {
+        super({
+            type: "array",
+            check: (v: unknown) => v instanceof Array,
+            message: array.default,
+        })
+        this._schema = schema
+    }
+
+    _parse(args: ParseInput): ParseReturn {
+        const _values = args.input
+        const result: ParseReturn = {
+            input: _values,
+            valid: true,
+            issues: []
+        }
+
+        if (this._options.required || _values) {
+            for (const value of _values) {
+                const _result = this._schema._parse({
+                    input: value
+                })
+
+                if (!_result.valid) {
+                    this._issues = _result.issues
+                }
+            }
+        }
+
+        result.issues = this._issues
+        if (result.issues.length) {
+            result.valid = false
+        }
+        return result
+    }
+}
+
+class StringSchema extends Schema<string> {
     constructor() {
         super({
             type: "string",
-            check: (v) => typeof v === "string",
-        });
+            check: (v: unknown) => typeof v === "string",
+            message: string.default,
+        })
     }
 
-    _parse(value: {
-        data: any;
-        params: {
-            path?: string[]
-        }
+    min(min: number, message?: string) {
+        return this._addRule({
+            name: "min",
+            cb: (v: unknown) => typeof v === "string" && v.length >= min,
+            message: message ?? string.min,
+            value: min
+        })
     }
-    ): Result<string> {
-        const _result: Result<string> = {
-            valid: true,
-            output: value.data,
-            issues: []
-        };
 
-        if (!this.isType(value.data)) {
-            this._createError("required", value.data, this._type, `Required`)
-        }
-
-        for (const rule of this._rules) {
-            if (!rule.cb(value.data)) {
-                this._createError(rule.name, value.data, rule.value, rule.message, value.params)
-            }
-        }
-
-        _result.issues = this._issues
-        if (_result.issues.length) {
-            _result.valid = false;
-        }
-        return _result;
+    max(max: number, message?: string) {
+        return this._addRule({
+            name: "min",
+            cb: (v: unknown) => typeof v === "string" && v.length >= max,
+            message: message ?? string.max,
+            value: max
+        })
     }
 }
 
-export class ValError<Input> {
-    _result: Result<Input>
-    constructor(result: Result<Input>) {
+class NumberSchema extends Schema<number> {
+    constructor() {
+        super({
+            type: "number",
+            check: (v: unknown) => typeof v === "number",
+            message: number.default,
+        })
+    }
+}
+
+// Errors
+type RecursiveErrorFormatting<T> = T extends ObjectShape ? {
+    [K in keyof T]?: FormattedError<T[K]>
+} : T extends object ? {
+    [K in keyof T]?: FormattedError<T[K]>
+} : unknown
+
+type FormattedError<T> = {
+    _errors: ErrorFormat[]
+} & RecursiveErrorFormatting<T>
+
+type ErrorFormat = {
+    name: string
+    message: string
+}
+
+class ValidationError<T = any> {
+    _result: ParseReturn
+    constructor(result: ParseReturn) {
         this._result = result
     }
 
-    format() {
-        const formatted: Record<string, any> = {}
+    getErrors(): Issue[] {
+        return this._result.issues
+    }
 
-        for (const issue of this._result.issues) {
+    format(): FormattedError<T> {
+        const formatted = {
+            _errors: []
+        } as FormattedError<T>
+        const issues = this._result.issues
+
+        for (const issue of issues) {
+            let currObject: any = formatted
             if (!issue.path) {
-                continue;
+                currObject._errors.push({
+                    name: issue.name,
+                    message: issue.message
+                })
+                continue
             }
 
-            let currObject = formatted
-            for (const key of issue.path) {
+            for (let i = 0; i < issue.path.length; i++) {
+                const key = issue.path[i] as keyof T
                 if (!currObject[key]) {
                     currObject[key] = {
                         _errors: []
                     }
                 }
-                currObject = currObject[key]
-            }
 
-            if (currObject._errors) {
-                currObject._errors.push({
-                    message: issue.message,
-                })
+                currObject = currObject[key]
+                if (i === issue.path.length - 1) {
+                    currObject._errors.push({
+                        name: issue.name,
+                        message: issue.message
+                    })
+                }
             }
         }
 
-        return formatted;
+        return formatted
     }
 }
 
 export const v = {
-    object: (schema: ObjectSchema) => new ObjectVal(schema),
-    string: () => new StringVal(),
-    ValError,
-};
-
-// export type Options = {
-//     required: boolean,
-// };
-//
-// export type Rule = {
-//     name: string,
-//     cb: (value: any) => boolean,
-//     message: string,
-//     value?: unknown,
-// };
-//
-// export type Value = string | number | Record<any, any> | undefined | null;
-//
-// export type Result<T> = {
-//     valid: boolean,
-//     output?: T,
-//     issues?: Issue[],
-// }
-//
-// export type Issue = {
-//     type: string,
-//     input: unknown,
-//     expected: unknown,
-//     received: unknown,
-//     message: string,
-//     path?: string[] | null
-// }
-//
-// abstract class SchemaVal {
-//     _rules: Rule[];
-//     _options: Options;
-//     _issues: Issue[] | undefined;
-//
-//     constructor() {
-//         this._options = {
-//             required: true,
-//         };
-//         this._rules = [];
-//         this._issues = [];
-//
-//         this.required()
-//     }
-//
-//     abstract _parse(value: unknown): Result<unknown>
-//
-//     validate<T>(value?: T, params?: { path: string[] }) {
-//         const _result: Result<T> = {
-//             valid: true,
-//             output: value,
-//             issues: []
-//         };
-//
-//         if (!this._isEmpty(value) || this._options.required) {
-//             for (const rule of this._rules) {
-//                 if (!rule.cb(value)) {
-//                     _result.valid = false;
-//                     this._createError(rule.name, value, rule.value, rule.message, params)
-//                 }
-//             }
-//         }
-//
-//         _result.issues = this._issues
-//         return _result;
-//     }
-//
-//     rule(
-//         name: string,
-//         cb: (value: unknown) => boolean,
-//         opts: {
-//             message: string,
-//             value?: unknown
-//         },
-//     ) {
-//         const index = this._rules.findIndex((rule) => rule.name === name)
-//         if (index === -1) {
-//             this._rules.push({
-//                 name,
-//                 cb,
-//                 ...opts
-//             });
-//         } else {
-//             this._rules[index] = {
-//                 name,
-//                 cb,
-//                 ...opts
-//             };
-//         }
-//
-//         return this;
-//     }
-//
-//     required(message?: string) {
-//         this._options.required = true;
-//         return this.rule(
-//             "required",
-//             (value) => value !== undefined && value !== null && value !== "",
-//             {
-//                 message: message ?? "Required"
-//             }
-//         );
-//     }
-//
-//     optional() {
-//         this._options.required = false;
-//         this._removeRule("required");
-//         return this;
-//     }
-//
-//     _isEmpty<T>(value: T) {
-//         if (value instanceof Array) {
-//             return value.length > 0 ? false : true;
-//         }
-//
-//         if (typeof value === "object" && value) {
-//             return Object.entries(value).length > 0 ? false : true;
-//         }
-//
-//         return !(value !== undefined && value !== null && value !== "");
-//     }
-//
-//     _createError(
-//         type: string,
-//         input: unknown,
-//         expected: unknown,
-//         message: string,
-//         params?: {
-//             path: string[]
-//         }
-//     ) {
-//         const _issue: Issue = {
-//             type,
-//             input,
-//             expected,
-//             received: input,
-//             message,
-//             ...params,
-//         }
-//
-//         if (!this._issues) {
-//             this._issues = []
-//         }
-//
-//         this._issues.push(_issue)
-//         return _issue;
-//     }
-//
-//     _removeRule(name: string) {
-//         const index = this._rules.findIndex((r) => r.name === name);
-//         if (index !== -1) {
-//             this._rules.splice(index, 1);
-//         }
-//     }
-// }
-//
-// type ObjectSchema = Record<string | number | symbol, SchemaVal>;
-//
-// export class ObjectVal extends SchemaVal {
-//     _schema: ObjectSchema;
-//     _path: string[];
-//
-//     constructor(schema: ObjectSchema) {
-//         super();
-//         this._schema = schema;
-//         this._path = []
-//     }
-//
-//     _parse(value: unknown) {
-//         throw new Error("Method not implemented.");
-//     }
-//
-//     validate<T extends Record<any, any>>(value: T) {
-//         const _result: Result<T> = {
-//             valid: true,
-//             output: value,
-//         };
-//
-//         if (!this._isEmpty(value) || this._options.required) {
-//             for (const key in this._schema) {
-//                 const _schema = this._schema[key];
-//                 const result = _schema.validate(value ? value[key] : value, { path: [key] });
-//
-//                 if (_schema instanceof ObjectVal) {
-//                     this._path.push(key)
-//                 }
-//
-//                 if (!result.valid && result.issues) {
-//                     if (!this._issues) {
-//                         this._issues = [];
-//                     }
-//
-//                     _result.valid = false;
-//                     for (const issue of result.issues) {
-//                         const path = issue.path ? [...this._path, ...issue.path] : []
-//                         this._issues.push({ ...issue, path })
-//                     }
-//                 }
-//             }
-//         }
-//
-//         _result.issues = this._issues
-//
-//         // Fix returning of Errors
-//         if (_result.issues) {
-//             const err = new ValError(_result)
-//             const formattedErr = err.format()
-//             console.log("Formatted", formattedErr)
-//
-//             // for (const key in formattedErr) {
-//             //     // @ts-ignore
-//             //     console.log(key, formattedErr[key])
-//             // }
-//         }
-//
-//         return _result
-//     }
-// }
-//
-// export class StringVal extends SchemaVal {
-//     constructor() {
-//         super();
-//         this.rule(
-//             "string",
-//             (value) => typeof value === "string",
-//             {
-//                 message: "Must be type of string"
-//             }
-//         );
-//     }
-//
-//     _parse(value: unknown) {
-//         throw new Error("Method not implemented.");
-//     }
-// }
-//
-// export class ValError<Input> {
-//     _result: Result<Input>
-//     constructor(result: Result<Input>) {
-//         this._result = result
-//     }
-//
-//     format() {
-//         const formatted: Record<string, any> = {}
-//
-//         if (!this._result.issues) {
-//             return this._result;
-//         }
-//
-//         for (const issue of this._result.issues) {
-//             console.log("Issue", issue)
-//             if (!issue.path) {
-//                 continue;
-//             }
-//
-//             let currObject = formatted
-//             for (const key of issue.path) {
-//                 if (!currObject[key]) {
-//                     currObject[key] = {
-//                         _errors: []
-//                     }
-//                 }
-//                 currObject = currObject[key]
-//             }
-//
-//             currObject._errors.push({
-//                 message: issue.message,
-//             })
-//         }
-//
-//         return formatted;
-//     }
-// }
-//
-// export const v = {
-//     object: (schema: ObjectSchema) => new ObjectVal(schema),
-//     string: () => new StringVal(),
-// };
+    object: <T>(schema: T extends ObjectShape ? T : never) => new ObjectSchema(schema),
+    array: <T>(schemas: T extends Schema ? T : never) => new ArraySchema(schemas),
+    string: () => new StringSchema(),
+    number: () => new NumberSchema(),
+    ValidationError,
+}
