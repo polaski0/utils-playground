@@ -256,6 +256,7 @@ class ObjectSchema<T extends ObjectShape, U = ObjectOutput<T>> extends Schema<U>
 
 class ArraySchema<T extends Schema> extends Schema<Array<T>> {
     _schema: T
+
     constructor(schema: T) {
         super({
             type: "array",
@@ -273,6 +274,25 @@ class ArraySchema<T extends Schema> extends Schema<Array<T>> {
             issues: []
         }
 
+        // Check its own rules
+        for (const rule of this._rules) {
+            if (!rule.cb(_values)) {
+                const _issue = {
+                    message: rule.message,
+                    name: rule.name,
+                    found: _values,
+                    ...args.params
+                }
+
+                if (rule.value) {
+                    _issue.value = rule.value
+                }
+
+                this._addIssue(_issue)
+            }
+        }
+
+        // Check the schema of inserted values
         if (this._options.required || _values) {
             for (const value of _values) {
                 const _result = this._schema._parse({
@@ -291,6 +311,24 @@ class ArraySchema<T extends Schema> extends Schema<Array<T>> {
         }
         return result
     }
+
+    min(min: number, message?: string) {
+        return this._addRule({
+            name: "min",
+            cb: (v: unknown[]) => v.length >= min,
+            message: message ?? array.min,
+            value: min
+        })
+    }
+
+    max(max: number, message?: string) {
+        return this._addRule({
+            name: "max",
+            cb: (v: unknown[]) => v.length <= max,
+            message: message ?? array.max,
+            value: max
+        })
+    }
 }
 
 class StringSchema extends Schema<string> {
@@ -305,7 +343,7 @@ class StringSchema extends Schema<string> {
     min(min: number, message?: string) {
         return this._addRule({
             name: "min",
-            cb: (v: unknown) => typeof v === "string" && v.length >= min,
+            cb: (v: string) => v.length >= min,
             message: message ?? string.min,
             value: min
         })
@@ -313,8 +351,8 @@ class StringSchema extends Schema<string> {
 
     max(max: number, message?: string) {
         return this._addRule({
-            name: "min",
-            cb: (v: unknown) => typeof v === "string" && v.length >= max,
+            name: "max",
+            cb: (v: string) => v.length <= max,
             message: message ?? string.max,
             value: max
         })

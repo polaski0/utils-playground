@@ -155,4 +155,16 @@ describe("array", () => {
 
         expect(result.valid).toBe(false)
     })
+
+    it("should validate array of objects to false", () => {
+        const stringsSchema = v.array(v.string()).min(2).max(3)
+        const result = stringsSchema.validate([
+            "foo",
+            "bar",
+            "fizz",
+            "buzz",
+        ])
+
+        expect(result.valid).toBe(false)
+    })
 })
