@@ -11,7 +11,7 @@ describe("string", () => {
     it("custom validation should return true", () => {
         const strSchema = v.string().custom(
             (v) => v === "asdf",
-            "Equal to asdf"
+            "Not equal to asdf"
         )
         const result = strSchema.validate("asdf")
         expect(result.valid).toBe(true)
@@ -81,7 +81,6 @@ describe("object", () => {
             name: "J",
             address: {
                 street: "123",
-                addtl: {}
             }
         })
 
@@ -96,6 +95,25 @@ describe("object", () => {
             }),
         })
         const result = objSchema.validate([])
+
+        expect(result.valid).toBe(false)
+    })
+
+    it("should return false on compare", () => {
+        const objSchema = v.object({
+            effectiveDate: v.date(),
+            expiryDate: v.date(),
+        }).custom(
+            (data) => {
+                return data.effectiveDate.getTime() < data.expiryDate.getTime()
+            },
+            "Effective must not be greater than expiry"
+        )
+
+        const result = objSchema.validate({
+            effectiveDate: new Date("07/29/2024"),
+            expiryDate: new Date("07/28/2024"),
+        })
 
         expect(result.valid).toBe(false)
     })

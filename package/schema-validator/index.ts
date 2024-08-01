@@ -60,6 +60,8 @@ abstract class Schema<Output = unknown> {
     _options: Options
     _issues: Issue[]
 
+    value?: Output
+
     constructor({
         type,
         check,
@@ -139,6 +141,7 @@ abstract class Schema<Output = unknown> {
     }
 
     validate(input?: unknown): Result<Output> {
+        this.value = input as Output
         const result = this._parse({ input })
         const returnValue: Result<Output> = {
             valid: result.valid,
@@ -157,7 +160,10 @@ abstract class Schema<Output = unknown> {
         return this
     }
 
-    custom(cb: (v: Output) => boolean, message: string) {
+    custom(
+        cb: (v: Output) => boolean,
+        message: string
+    ) {
         return this._addRule({
             name: "custom_error",
             cb: cb,
@@ -222,6 +228,25 @@ class ObjectSchema<T extends ObjectShape, U = ObjectOutput<T>> extends Schema<U>
                 found: args.input,
             })
         } else if (this._options.required || _value) {
+            // Check its own rules
+            for (const rule of this._rules) {
+                if (!rule.cb(_value)) {
+                    const _issue = {
+                        message: rule.message,
+                        name: rule.name,
+                        found: _value,
+                        ...args.params
+                    }
+
+                    if (rule.value) {
+                        _issue.value = rule.value
+                    }
+
+                    this._addIssue(_issue)
+                }
+            }
+
+            // Check schema rules
             for (const key in this._schema) {
                 const _schema = this._schema[key]
                 const _result = _schema._parse({
@@ -375,6 +400,26 @@ class NumberSchema extends Schema<number> {
     }
 }
 
+class BooleanSchema extends Schema<Boolean> {
+    constructor() {
+        super({
+            type: "boolean",
+            check: (v: unknown) => v instanceof Boolean,
+            message: boolean.default,
+        })
+    }
+}
+
+class DateSchema extends Schema<Date> {
+    constructor() {
+        super({
+            type: "date",
+            check: (v: unknown) => v instanceof Date,
+            message: date.default,
+        })
+    }
+}
+
 // Errors
 type RecursiveErrorFormatting<T> = T extends ObjectShape ? {
     [K in keyof T]?: FormattedError<T[K]>
@@ -444,5 +489,7 @@ export const v = {
     array: <T>(schemas: T extends Schema ? T : never) => new ArraySchema(schemas),
     string: () => new StringSchema(),
     number: () => new NumberSchema(),
+    date: () => new DateSchema(),
+    boolean: () => new BooleanSchema(),
     ValidationError,
 }

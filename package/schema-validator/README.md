@@ -18,7 +18,11 @@ The purpose of this is to apply type-safety and learn how to validate a JSON obj
     - [x] number
     - [x] object
     - [x] array
-    - [ ] date
-    - [ ] boolean
-- [ ] Tranformer
-- [ ] Coerce
+    - [x] date
+    - [x] boolean
+- [ ] Object Schema
+    - [ ] Comparison of keys
+- [ ] Methods
+    - [ ] Default value
+    - [ ] Tranformer
+    - [ ] Coerce
