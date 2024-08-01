@@ -64,7 +64,7 @@ describe("object", () => {
         expect(result.valid).toBe(true)
     })
 
-    it("should throw ValidationError on empty object", () => {
+    it("should throw ValidationError on incomplete object", () => {
         const objSchema = v.object({
             name: v.string().min(2),
             address: v.object({
@@ -86,6 +86,18 @@ describe("object", () => {
         })
 
         expect(result.errors).not.toBeUndefined()
+    })
+
+    it("should return false on wrong type", () => {
+        const objSchema = v.object({
+            name: v.string(),
+            address: v.object({
+                street: v.string(),
+            }),
+        })
+        const result = objSchema.validate([])
+
+        expect(result.valid).toBe(false)
     })
 })
 
@@ -156,7 +168,7 @@ describe("array", () => {
         expect(result.valid).toBe(false)
     })
 
-    it("should validate array of objects to false", () => {
+    it("should validate array of strings to false", () => {
         const stringsSchema = v.array(v.string()).min(2).max(3)
         const result = stringsSchema.validate([
             "foo",
@@ -164,6 +176,13 @@ describe("array", () => {
             "fizz",
             "buzz",
         ])
+
+        expect(result.valid).toBe(false)
+    })
+
+    it("should validate wrong input to false", () => {
+        const stringsSchema = v.array(v.string()).min(2).max(3)
+        const result = stringsSchema.validate({})
 
         expect(result.valid).toBe(false)
     })

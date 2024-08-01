@@ -200,7 +200,7 @@ class ObjectSchema<T extends ObjectShape, U = ObjectOutput<T>> extends Schema<U>
     constructor(schema: T) {
         super({
             type: "object",
-            check: (v: unknown) => typeof v === "object" && v !== null,
+            check: (v: unknown) => typeof v === "object" && v !== null && !(v instanceof Array),
             message: object.default,
         })
         this._schema = schema
@@ -215,7 +215,13 @@ class ObjectSchema<T extends ObjectShape, U = ObjectOutput<T>> extends Schema<U>
             issues: []
         }
 
-        if (this._options.required || _value) {
+        if (!this.isType(_value)) {
+            this._addIssue({
+                message: common.default,
+                name: "invalid_type",
+                found: args.input,
+            })
+        } else if (this._options.required || _value) {
             for (const key in this._schema) {
                 const _schema = this._schema[key]
                 const _result = _schema._parse({
@@ -238,12 +244,6 @@ class ObjectSchema<T extends ObjectShape, U = ObjectOutput<T>> extends Schema<U>
                     }
                 }
             }
-        } else if (!this.isType(_value)) {
-            this._addIssue({
-                message: common.default,
-                name: "invalid_type",
-                found: args.input,
-            })
         }
 
         result.issues = this._issues
@@ -267,34 +267,40 @@ class ArraySchema<T extends Schema> extends Schema<Array<T>> {
     }
 
     _parse(args: ParseInput): ParseReturn {
-        const _values = args.input
+        const _value = args.input
         const result: ParseReturn = {
-            input: _values,
+            input: _value,
             valid: true,
             issues: []
         }
 
-        // Check its own rules
-        for (const rule of this._rules) {
-            if (!rule.cb(_values)) {
-                const _issue = {
-                    message: rule.message,
-                    name: rule.name,
-                    found: _values,
-                    ...args.params
-                }
+        if (!this.isType(_value)) {
+            this._addIssue({
+                message: array.default,
+                name: "invalid_type",
+                found: args.input,
+            })
+        } else if (this._options.required || _value) {
+            // Check its own rules
+            for (const rule of this._rules) {
+                if (!rule.cb(_value)) {
+                    const _issue = {
+                        message: rule.message,
+                        name: rule.name,
+                        found: _value,
+                        ...args.params
+                    }
 
-                if (rule.value) {
-                    _issue.value = rule.value
-                }
+                    if (rule.value) {
+                        _issue.value = rule.value
+                    }
 
-                this._addIssue(_issue)
+                    this._addIssue(_issue)
+                }
             }
-        }
 
-        // Check the schema of inserted values
-        if (this._options.required || _values) {
-            for (const value of _values) {
+            // Check the schema of inserted values
+            for (const value of _value) {
                 const _result = this._schema._parse({
                     input: value
                 })
