@@ -1,7 +1,7 @@
 import { v } from "."
 
 describe("string", () => {
-    const strSchema = v.string();
+    const strSchema = v.string()
 
     it("should return true", () => {
         const result = strSchema.validate("asdf")
@@ -12,7 +12,7 @@ describe("string", () => {
         const strSchema = v.string().custom(
             (v) => v === "asdf",
             "Equal to asdf"
-        );
+        )
         const result = strSchema.validate("asdf")
         expect(result.valid).toBe(true)
     })
@@ -21,13 +21,13 @@ describe("string", () => {
         const strSchema = v.string().custom(
             (v) => v === "asdf",
             "Not equal to asdf"
-        );
+        )
         const result = strSchema.validate("qwe")
         expect(result.valid).toBe(false)
     })
 
     it("should allow undefined value and return true", () => {
-        const strSchema = v.string().optional();
+        const strSchema = v.string().optional()
         const result = strSchema.validate()
         expect(result.valid).toBe(true)
     })
@@ -41,7 +41,7 @@ describe("string", () => {
     })
 
     it("should throw ValidationError on optional but wrong input type", () => {
-        const strSchema = v.string().optional();
+        const strSchema = v.string().optional()
         expect(strSchema.validate(1).errors).not.toBeUndefined()
     })
 })
@@ -53,7 +53,7 @@ describe("object", () => {
             address: v.object({
                 street: v.string(),
             }),
-        });
+        })
 
         const result = objSchema.validate({
             name: "John",
@@ -91,13 +91,13 @@ describe("object", () => {
 
 describe("array", () => {
     it("should return true", () => {
-        const stringsSchema = v.array(v.string());
+        const stringsSchema = v.array(v.string())
         const result = stringsSchema.validate(["Foo", "Bar"])
         expect(result.valid).toBe(true)
     })
 
     it("should return false", () => {
-        const stringsSchema = v.array(v.string());
+        const stringsSchema = v.array(v.string())
         const result = stringsSchema.validate([1, 2])
         expect(result.valid).toBe(false)
     })
@@ -110,7 +110,7 @@ describe("array", () => {
                     street: v.string()
                 })
             })
-        );
+        )
         const result = stringsSchema.validate([
             {
                 name: "John",
@@ -137,7 +137,7 @@ describe("array", () => {
                     street: v.string()
                 })
             })
-        );
+        )
         const result = stringsSchema.validate([
             {
                 name: "John",

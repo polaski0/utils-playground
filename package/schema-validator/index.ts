@@ -1,59 +1,81 @@
+import {
+    common,
+    array,
+    boolean,
+    date,
+    object,
+    number,
+    string
+} from "./locale"
+
+import {
+    replaceString
+} from "./utils"
+
 type ParseInput = {
-    input: any;
+    input: any
     params?: ExtendedIssue
 }
 
 type ParseReturn = {
-    input: any;
-    valid: boolean;
-    issues: Issue[];
+    input: any
+    valid: boolean
+    issues: Issue[]
 }
 
 type Rule = {
-    name: string;
-    cb: (value: any) => boolean;
-    message: string;
+    name: string
+    cb: (value: any) => boolean
+    message: string
+    value?: unknown
 }
 
 type Options = {
-    required: boolean;
+    required: boolean
 }
 
 type Issue = {
-    name: string;
-    found: unknown;
-    message: string;
+    name: string
+    found: unknown
+    message: string
 } & ExtendedIssue
 
 type ExtendedIssue = {
-    path?: string[];
+    path?: string[]
+    value?: unknown
 }
 
 type Result<T> = {
-    valid: boolean;
-    value: T;
+    valid: boolean
+    value: T
     errors?: ValidationError<T>
 }
 
 abstract class Schema<Output = unknown> {
-    _type: string;
-    _typeCheck: (v: unknown) => boolean;
+    _type: string
+    _typeCheck: (v: unknown) => boolean
+    _typeMessage: string
 
-    _rules: Rule[];
-    _options: Options;
-    _issues: Issue[];
+    _rules: Rule[]
+    _options: Options
+    _issues: Issue[]
 
     constructor({
         type,
-        check
+        check,
+        message
     }: {
-        type: string,
-        check: (v: unknown) => boolean;
+        type: string
+        check: (v: unknown) => boolean
+        message?: string
     }) {
         this._rules = []
         this._issues = []
+
         this._type = type
         this._typeCheck = check
+        this._typeMessage = message ?? common.default
+
         this._options = {
             required: true
         }
@@ -69,14 +91,14 @@ abstract class Schema<Output = unknown> {
         if (!this.isType(args.input)) {
             if (args.input) {
                 this._addIssue({
-                    message: `The type supplied is invalid.`,
+                    message: this._typeMessage,
                     name: "invalid_type",
                     found: args.input,
                     ...args.params
                 })
             } else {
                 this._addIssue({
-                    message: `Required`,
+                    message: common.required,
                     name: "required",
                     found: args.input,
                     ...args.params
@@ -85,12 +107,18 @@ abstract class Schema<Output = unknown> {
         } else {
             for (const rule of this._rules) {
                 if (!rule.cb(args.input)) {
-                    this._addIssue({
+                    const _issue = {
                         message: rule.message,
                         name: rule.name,
                         found: args.input,
                         ...args.params
-                    })
+                    }
+
+                    if (rule.value) {
+                        _issue.value = rule.value
+                    }
+
+                    this._addIssue(_issue)
                 }
             }
         }
@@ -99,13 +127,13 @@ abstract class Schema<Output = unknown> {
         if (result.issues.length) {
             result.valid = false
         }
-        return result;
+        return result
     }
 
     isType(input: unknown) {
         if (!input) {
-            if (!this._options.required && input === null) return true;
-            if (!this._options.required && input === undefined) return true;
+            if (!this._options.required && input === null) return true
+            if (!this._options.required && input === undefined) return true
         }
         return this._typeCheck(input)
     }
@@ -125,8 +153,8 @@ abstract class Schema<Output = unknown> {
     }
 
     optional() {
-        this._options.required = false;
-        return this;
+        this._options.required = false
+        return this
     }
 
     custom(cb: (v: Output) => boolean, message: string) {
@@ -138,38 +166,49 @@ abstract class Schema<Output = unknown> {
     }
 
     _addIssue(issue: Issue) {
-        this._issues.push(issue);
+        const _issue = issue
+
+        if (_issue.value) {
+            _issue.message = replaceString(
+                _issue.message,
+                new RegExp(`{${issue.name}}`),
+                _issue.value.toString()
+            )
+        }
+
+        this._issues.push(_issue)
     }
 
     _addRule(rule: Rule) {
-        this._rules.push(rule);
-        return this;
+        this._rules.push(rule)
+        return this
     }
 }
 
-type ObjectShape = Record<string, Schema>;
+type ObjectShape = Record<string, Schema>
 
-type Infer<T extends Schema> = T extends Schema<infer I> ? I : never;
+type Infer<T extends Schema> = T extends Schema<infer I> ? I : never
 
 type ObjectOutput<T> = T extends ObjectShape ? {
     [K in keyof T]: Infer<T[K]>
-} : never;
+} : never
 
 class ObjectSchema<T extends ObjectShape, U = ObjectOutput<T>> extends Schema<U> {
-    _schema: T;
-    _path: string[];
+    _schema: T
+    _path: string[]
 
     constructor(schema: T) {
         super({
             type: "object",
-            check: (v: unknown) => typeof v === "object" && v !== null
-        });
-        this._schema = schema;
-        this._path = [];
+            check: (v: unknown) => typeof v === "object" && v !== null,
+            message: object.default,
+        })
+        this._schema = schema
+        this._path = []
     }
 
     _parse(args: ParseInput): ParseReturn {
-        const _value = args.input;
+        const _value = args.input
         const result: ParseReturn = {
             input: _value,
             valid: true,
@@ -201,7 +240,7 @@ class ObjectSchema<T extends ObjectShape, U = ObjectOutput<T>> extends Schema<U>
             }
         } else if (!this.isType(_value)) {
             this._addIssue({
-                message: `The object supplied is invalid`,
+                message: common.default,
                 name: "invalid_type",
                 found: args.input,
             })
@@ -212,40 +251,6 @@ class ObjectSchema<T extends ObjectShape, U = ObjectOutput<T>> extends Schema<U>
             result.valid = false
         }
         return result
-    };
-}
-
-class StringSchema extends Schema<string> {
-    constructor() {
-        super({
-            type: "string",
-            check: (v: unknown) => typeof v === "string"
-        });
-    }
-
-    min(min: number, message?: string) {
-        return this._addRule({
-            name: "min",
-            cb: (v: unknown) => typeof v === "string" && v.length >= min,
-            message: message ?? `Must have a minimum length of ${min}`
-        })
-    }
-
-    max(max: number, message?: string) {
-        return this._addRule({
-            name: "min",
-            cb: (v: unknown) => typeof v === "string" && v.length >= max,
-            message: message ?? `Must have a minimum length of ${max}`
-        })
-    }
-}
-
-class NumberSchema extends Schema<number> {
-    constructor() {
-        super({
-            type: "number",
-            check: (v: unknown) => typeof v === "number"
-        });
     }
 }
 
@@ -254,13 +259,14 @@ class ArraySchema<T extends Schema> extends Schema<Array<T>> {
     constructor(schema: T) {
         super({
             type: "array",
-            check: (v: unknown) => v instanceof Array
-        });
-        this._schema = schema;
+            check: (v: unknown) => v instanceof Array,
+            message: array.default,
+        })
+        this._schema = schema
     }
 
     _parse(args: ParseInput): ParseReturn {
-        const _values = args.input;
+        const _values = args.input
         const result: ParseReturn = {
             input: _values,
             valid: true,
@@ -284,9 +290,48 @@ class ArraySchema<T extends Schema> extends Schema<Array<T>> {
             result.valid = false
         }
         return result
-    };
+    }
 }
 
+class StringSchema extends Schema<string> {
+    constructor() {
+        super({
+            type: "string",
+            check: (v: unknown) => typeof v === "string",
+            message: string.default,
+        })
+    }
+
+    min(min: number, message?: string) {
+        return this._addRule({
+            name: "min",
+            cb: (v: unknown) => typeof v === "string" && v.length >= min,
+            message: message ?? string.min,
+            value: min
+        })
+    }
+
+    max(max: number, message?: string) {
+        return this._addRule({
+            name: "min",
+            cb: (v: unknown) => typeof v === "string" && v.length >= max,
+            message: message ?? string.max,
+            value: max
+        })
+    }
+}
+
+class NumberSchema extends Schema<number> {
+    constructor() {
+        super({
+            type: "number",
+            check: (v: unknown) => typeof v === "number",
+            message: number.default,
+        })
+    }
+}
+
+// Errors
 type RecursiveErrorFormatting<T> = T extends ObjectShape ? {
     [K in keyof T]?: FormattedError<T[K]>
 } : T extends object ? {
@@ -298,14 +343,18 @@ type FormattedError<T> = {
 } & RecursiveErrorFormatting<T>
 
 type ErrorFormat = {
-    name: string;
-    message: string;
+    name: string
+    message: string
 }
 
 class ValidationError<T = any> {
     _result: ParseReturn
     constructor(result: ParseReturn) {
         this._result = result
+    }
+
+    getErrors(): Issue[] {
+        return this._result.issues
     }
 
     format(): FormattedError<T> {
@@ -320,7 +369,7 @@ class ValidationError<T = any> {
                 currObject._errors.push({
                     name: issue.name,
                     message: issue.message
-                });
+                })
                 continue
             }
 
@@ -337,7 +386,7 @@ class ValidationError<T = any> {
                     currObject._errors.push({
                         name: issue.name,
                         message: issue.message
-                    });
+                    })
                 }
             }
         }
