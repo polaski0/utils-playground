@@ -8,7 +8,7 @@ describe("string", () => {
         expect(result.valid).toBe(true)
     })
 
-    it("custom validation should return true", () => {
+    it("should return true for custom validation", () => {
         const strSchema = v.string().custom(
             (v) => v === "asdf",
             "Not equal to asdf"
@@ -17,13 +17,19 @@ describe("string", () => {
         expect(result.valid).toBe(true)
     })
 
-    it("custom validation should return false", () => {
+    it("should return false for custom validation", () => {
         const strSchema = v.string().custom(
             (v) => v === "asdf",
             "Not equal to asdf"
         )
         const result = strSchema.validate("qwe")
         expect(result.valid).toBe(false)
+    })
+
+    it("should not fail if there is no data", () => {
+        const strSchema = v.string().optional().trim()
+        const result = strSchema.validate()
+        expect(result.valid).toBe(true)
     })
 
     it("should allow undefined value and return true", () => {

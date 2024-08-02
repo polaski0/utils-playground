@@ -50,16 +50,20 @@ type Result<T> = {
     errors?: ValidationError<T>
 }
 
+type Transformer<T = any> = {
+    name: string
+    cb: (v: T) => T
+}
+
 abstract class Schema<Output = unknown> {
     _type: string
     _typeCheck: (v: unknown) => boolean
     _typeMessage: string
 
     _rules: Rule[]
+    _transformers: Transformer[]
     _options: Options
     _issues: Issue[]
-
-    value?: Output
 
     constructor({
         type,
@@ -72,6 +76,7 @@ abstract class Schema<Output = unknown> {
     }) {
         this._rules = []
         this._issues = []
+        this._transformers = []
 
         this._type = type
         this._typeCheck = check
@@ -127,6 +132,13 @@ abstract class Schema<Output = unknown> {
         result.issues = this._issues
         if (result.issues.length) {
             result.valid = false
+        } else {
+            // Apply transformations after validation
+            if (args.input && this._transformers.length) {
+                for (const transformer of this._transformers) {
+                    result.input = transformer.cb(args.input)
+                }
+            }
         }
         return result
     }
@@ -140,8 +152,7 @@ abstract class Schema<Output = unknown> {
     }
 
     validate(input?: unknown): Result<Output> {
-        this.value = input as Output
-        const result = this._parse({ input })
+        const result = this._parse({ input: input })
         const returnValue: Result<Output> = {
             valid: result.valid,
             value: result.input,
@@ -186,6 +197,11 @@ abstract class Schema<Output = unknown> {
 
     _addRule(rule: Rule) {
         this._rules.push(rule)
+        return this
+    }
+
+    _addTransformer(transformer: Transformer) {
+        this._transformers.push(transformer)
         return this
     }
 }
@@ -385,6 +401,13 @@ class StringSchema extends Schema<string> {
             cb: (v: string) => v.length <= max,
             message: message ?? string.max,
             value: max
+        })
+    }
+
+    trim() {
+        return this._addTransformer({
+            name: "trim",
+            cb: (v: string) => v.trim()
         })
     }
 }
