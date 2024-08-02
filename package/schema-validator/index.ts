@@ -7,7 +7,6 @@ import {
     number,
     string
 } from "./locale"
-
 import {
     replaceString
 } from "./utils"

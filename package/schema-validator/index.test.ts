@@ -99,7 +99,7 @@ describe("object", () => {
         expect(result.valid).toBe(false)
     })
 
-    it("should return false on compare", () => {
+    it("should compare and return false", () => {
         const objSchema = v.object({
             effectiveDate: v.date(),
             expiryDate: v.date(),
@@ -113,6 +113,29 @@ describe("object", () => {
         const result = objSchema.validate({
             effectiveDate: new Date("07/29/2024"),
             expiryDate: new Date("07/28/2024"),
+        })
+
+        expect(result.valid).toBe(false)
+    })
+
+    it("should compare nested values and return false", () => {
+        const objSchema = v.object({
+            num1: v.number(),
+            nested1: v.object({
+                num2: v.number()
+            }),
+        }).custom(
+            (data) => {
+                return data.num1 > data.nested1.num2
+            },
+            "Num 1 must be greater than num 2"
+        )
+
+        const result = objSchema.validate({
+            num1: 1,
+            nested1: {
+                num2: 2
+            }
         })
 
         expect(result.valid).toBe(false)
