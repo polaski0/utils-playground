@@ -64,6 +64,20 @@ describe("object", () => {
         expect(result.valid).toBe(true)
     })
 
+    it("should return true on optional key", () => {
+        const objSchema = v.object({
+            first_name: v.string(),
+            middle_name: v.string().optional(),
+            last_name: v.string(),
+        })
+
+        const result = objSchema.validate({
+            first_name: "John",
+            last_name: "Doe",
+        })
+        expect(result.valid).toBe(true)
+    })
+
     it("should throw ValidationError on incomplete object", () => {
         const objSchema = v.object({
             name: v.string().min(2),

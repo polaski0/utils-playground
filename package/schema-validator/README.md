@@ -3,16 +3,14 @@
 ## Table of Contents
 
 * [Introduction](#introduction)
-* [How to Use](#how-to-use) - in progress
-* [Methods](#methods) - in progress
-* [How it Works](#how-it-works) - in progress
-* [Todo](#todo) - in progress
+* [How to Use](#how-to-use) - WIP
+* [Methods](#methods) - WIP
+* [How it Works](#how-it-works) - WIP
+* [Todo](#todo) - WIP
 
 ## Introduction
 
 Schema validator with no third-party dependencies.
-
-> Still being improved.
 
 ### Inspired by
 
@@ -22,15 +20,7 @@ Different libraries I used as a reference material to build this:
 
 ## How to use
 
-### Primitive Types
-
-Supports the following primitive types:
-- Number
-- String
-- Array
-- Date
-- Object
-- Boolean
+### Basic Usage
 
 To check if a certain value is of type primitive, you can use a specific primitive. 
 For example, `v.string()` is used to check if the value is a type of string:
@@ -50,19 +40,47 @@ str.validate(1);
 // Invalid
 ```
 
+You can use different primitives to build an object schema:
+```js
+const user = v.object({
+    username: v.string(),
+    email: v.string(),
+});
+
+user.validate({
+    username: "john_doe",
+    email: "john_doe@exmaple.com",
+});
+// Valid
+```
+
+### Primitive Types
+
+Supports the following primitive types:
+```js
+import { v } from ".";
+
+v.string()
+v.number()
+v.object()
+v.array()
+v.date()
+v.boolean()
+```
+
 ### Optional Properties
 
 To allow `null` and `undefined` values, simply add `.optional()` on the schema.
 
 ```js
-const obj = v.object({
+const user = v.object({
     first_name: v.string(),
      // Not everyone have a middle name
     middle_name: v.string().optional(),
     last_name: v.string(),
 })
 
-obj.validate({
+user.validate({
     first_name: "John",
     last_name: "Doe"
 })
@@ -71,19 +89,40 @@ obj.validate({
 
 > This is not limited to object schema.
 
+## Methods
+
+### Strings - WIP
+
+### Number - WIP
+
+### Object - WIP
+
+### Array - WIP
+
+### Date - WIP
+
+### Boolean - WIP
+
 ## Todo
 - [ ] Types
     - [ ] Allow generating of types based on schema 
-- [x] Primitives
+- [ ] Primitives
     - [x] string
     - [x] number
     - [x] object
     - [x] array
     - [x] date
     - [x] boolean
-- [ ] Tranformer
-- [ ] Coerce
+    - [ ] null
+    - [ ] undefined
+    - [ ] literals
+- [ ] Schema
+    - [ ] Allow overriding of default message
 - [ ] Object Schema
- - [ ] Stop on first error
- - [ ] Strip unvalidated keys / keys that isn't included in schema
+    - [ ] Stop on first error
+    - [ ] Strip unvalidated keys / keys that isn't included in schema
+- [ ] Methods
+    - [ ] Expand validation methods of different primitives
+- [ ] Tranformer
+- [ ] Coercion
 - [ ] Async validation
