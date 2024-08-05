@@ -60,12 +60,12 @@ Supports the following primitive types:
 ```js
 import { v } from ".";
 
-v.string()
-v.number()
-v.object()
-v.array()
-v.date()
-v.boolean()
+v.string();
+v.number();
+v.object();
+v.array();
+// v.date();
+// v.boolean();
 ```
 
 ### Optional Properties
@@ -78,30 +78,61 @@ const user = v.object({
      // Not everyone have a middle name
     middle_name: v.string().optional(),
     last_name: v.string(),
-})
+});
 
 user.validate({
     first_name: "John",
     last_name: "Doe"
-})
+});
 // Valid
 ```
 
 > This is not limited to object schema.
 
-## Methods
+## Methods - WIP
 
-### Strings - WIP
+### Strings
 
-### Number - WIP
+```js
+v.string().min(1);
+v.string().max(5);
+```
 
-### Object - WIP
+The error messages can be modified by passing a second parameter to the methods:
 
-### Array - WIP
+```js
+v.string().min(1, "Must have a minimum length of 1.");
+```
 
-### Date - WIP
+### Number
 
-### Boolean - WIP
+Not yet implemented
+
+### Date
+
+Not yet implemented
+
+### Boolean
+
+Not yet implemented
+
+### Object
+
+Not yet implemented
+
+### Array
+
+```js
+v.array(v.string()).min(1);
+v.array(v.string()).max(5);
+```
+
+The error messages can be modified by passing a second parameter to the methods:
+
+```js
+v.array(v.string()).min(1, "Must have a minimum length of 1.");
+```
+
 
 ## Todo
 - [ ] Types
@@ -111,8 +142,8 @@ user.validate({
     - [x] number
     - [x] object
     - [x] array
-    - [x] date
-    - [x] boolean
+    - [ ] date
+    - [ ] boolean
     - [ ] null
     - [ ] undefined
     - [ ] literals
