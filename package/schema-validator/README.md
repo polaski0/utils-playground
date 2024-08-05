@@ -33,12 +33,12 @@ Supports the following primitive types:
 - Boolean
 
 To check if a certain value is of type primitive, you can use a specific primitive. 
-For example, `s.string()` is used to check if the value is a type of string:
+For example, `v.string()` is used to check if the value is a type of string:
 
 ```js
-import { s } from "."
+import { v } from "."
 
-const str = s.string();
+const str = v.string();
 str.validate("Hello, world!");
 // Valid
 ```
@@ -55,11 +55,11 @@ str.validate(1);
 To allow `null` and `undefined` values, simply add `.optional()` on the schema.
 
 ```js
-const obj = s.object({
-    first_name: s.string(),
+const obj = v.object({
+    first_name: v.string(),
      // Not everyone have a middle name
-    middle_name: s.string().optional(),
-    last_name: s.string(),
+    middle_name: v.string().optional(),
+    last_name: v.string(),
 })
 
 obj.validate({
