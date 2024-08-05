@@ -62,7 +62,7 @@ const obj = s.object({
     last_name: v.string(),
 })
 
-obj.parse({
+obj.validate({
     first_name: "John",
     last_name: "Doe"
 })
