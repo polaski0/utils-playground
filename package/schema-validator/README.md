@@ -2,11 +2,11 @@
 
 ## Table of Contents
 
-[Introduction](#introduction)
-[How to Use](#how-to-use) - in progress
-[Methods](#methods) - in progress
-[How it Works](#how-it-works) - in progress
-[Todo](#todo) - in progress
+* [Introduction](#introduction)
+* [How to Use](#how-to-use) - in progress
+* [Methods](#methods) - in progress
+* [How it Works](#how-it-works) - in progress
+* [Todo](#todo) - in progress
 
 ## Introduction
 
