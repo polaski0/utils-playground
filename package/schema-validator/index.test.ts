@@ -8,22 +8,34 @@ describe("string", () => {
         expect(result.valid).toBe(true)
     })
 
-    it("custom validation should return true", () => {
+    it("should return true for custom validation", () => {
         const strSchema = v.string().custom(
             (v) => v === "asdf",
-            "Equal to asdf"
+            "Not equal to asdf"
         )
         const result = strSchema.validate("asdf")
         expect(result.valid).toBe(true)
     })
 
-    it("custom validation should return false", () => {
+    it("should return false for custom validation", () => {
         const strSchema = v.string().custom(
             (v) => v === "asdf",
             "Not equal to asdf"
         )
         const result = strSchema.validate("qwe")
         expect(result.valid).toBe(false)
+    })
+
+    it("should not fail if there is no data to transform", () => {
+        const strSchema = v.string().optional().trim()
+        const result = strSchema.validate()
+        expect(result.valid).toBe(true)
+    })
+
+    it("should prefix \"123\" to the validated value using transform() method", () => {
+        const strSchema = v.string().transform((v) => "123" + v)
+        const result = strSchema.validate("456")
+        expect(result.value).toBe("123456")
     })
 
     it("should allow undefined value and return true", () => {
@@ -95,7 +107,6 @@ describe("object", () => {
             name: "J",
             address: {
                 street: "123",
-                addtl: {}
             }
         })
 
@@ -110,6 +121,48 @@ describe("object", () => {
             }),
         })
         const result = objSchema.validate([])
+
+        expect(result.valid).toBe(false)
+    })
+
+    it("should compare and return false", () => {
+        const objSchema = v.object({
+            effectiveDate: v.date(),
+            expiryDate: v.date(),
+        }).custom(
+            (data) => {
+                return data.effectiveDate.getTime() < data.expiryDate.getTime()
+            },
+            "Effective must not be greater than expiry"
+        )
+
+        const result = objSchema.validate({
+            effectiveDate: new Date("07/29/2024"),
+            expiryDate: new Date("07/28/2024"),
+        })
+
+        expect(result.valid).toBe(false)
+    })
+
+    it("should compare nested values and return false", () => {
+        const objSchema = v.object({
+            num1: v.number(),
+            nested1: v.object({
+                num2: v.number()
+            }),
+        }).custom(
+            (data) => {
+                return data.num1 > data.nested1.num2
+            },
+            "Num 1 must be greater than num 2"
+        )
+
+        const result = objSchema.validate({
+            num1: 1,
+            nested1: {
+                num2: 2
+            }
+        })
 
         expect(result.valid).toBe(false)
     })

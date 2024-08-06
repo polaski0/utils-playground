@@ -7,7 +7,6 @@ import {
     number,
     string
 } from "./locale"
-
 import {
     replaceString
 } from "./utils"
@@ -51,12 +50,18 @@ type Result<T> = {
     errors?: ValidationError<T>
 }
 
+type Transformer<T = any> = {
+    name: string
+    cb: (v: T) => T
+}
+
 abstract class Schema<Output = unknown> {
     _type: string
     _typeCheck: (v: unknown) => boolean
     _typeMessage: string
 
     _rules: Rule[]
+    _transformers: Transformer[]
     _options: Options
     _issues: Issue[]
 
@@ -71,6 +76,7 @@ abstract class Schema<Output = unknown> {
     }) {
         this._rules = []
         this._issues = []
+        this._transformers = []
 
         this._type = type
         this._typeCheck = check
@@ -126,6 +132,13 @@ abstract class Schema<Output = unknown> {
         result.issues = this._issues
         if (result.issues.length) {
             result.valid = false
+        } else {
+            // Apply transformations after validation
+            if (args.input && this._transformers.length) {
+                for (const transformer of this._transformers) {
+                    result.input = transformer.cb(args.input)
+                }
+            }
         }
         return result
     }
@@ -139,7 +152,7 @@ abstract class Schema<Output = unknown> {
     }
 
     validate(input?: unknown): Result<Output> {
-        const result = this._parse({ input })
+        const result = this._parse({ input: input })
         const returnValue: Result<Output> = {
             valid: result.valid,
             value: result.input,
@@ -157,12 +170,26 @@ abstract class Schema<Output = unknown> {
         return this
     }
 
-    custom(cb: (v: Output) => boolean, message: string) {
+    // To add custom validations
+    custom(
+        cb: (v: Output) => boolean,
+        message: string
+    ) {
         return this._addRule({
             name: "custom_error",
             cb: cb,
             message: message
         })
+    }
+
+    // To add custom transformation
+    transform(
+        cb: (v: Output) => Output,
+    ) {
+            return this._addTransformer({
+                name: "custom_transform",
+                cb
+            })
     }
 
     _addIssue(issue: Issue) {
@@ -181,6 +208,11 @@ abstract class Schema<Output = unknown> {
 
     _addRule(rule: Rule) {
         this._rules.push(rule)
+        return this
+    }
+
+    _addTransformer(transformer: Transformer) {
+        this._transformers.push(transformer)
         return this
     }
 }
@@ -222,6 +254,25 @@ class ObjectSchema<T extends ObjectShape, U = ObjectOutput<T>> extends Schema<U>
                 found: args.input,
             })
         } else if (this._options.required || _value) {
+            // Check its own rules
+            for (const rule of this._rules) {
+                if (!rule.cb(_value)) {
+                    const _issue = {
+                        message: rule.message,
+                        name: rule.name,
+                        found: _value,
+                        ...args.params
+                    }
+
+                    if (rule.value) {
+                        _issue.value = rule.value
+                    }
+
+                    this._addIssue(_issue)
+                }
+            }
+
+            // Check schema rules
             for (const key in this._schema) {
                 const _schema = this._schema[key]
                 const _result = _schema._parse({
@@ -363,6 +414,13 @@ class StringSchema extends Schema<string> {
             value: max
         })
     }
+
+    trim() {
+        return this._addTransformer({
+            name: "trim",
+            cb: (v: string) => v.trim()
+        })
+    }
 }
 
 class NumberSchema extends Schema<number> {
@@ -371,6 +429,26 @@ class NumberSchema extends Schema<number> {
             type: "number",
             check: (v: unknown) => typeof v === "number",
             message: number.default,
+        })
+    }
+}
+
+class BooleanSchema extends Schema<Boolean> {
+    constructor() {
+        super({
+            type: "boolean",
+            check: (v: unknown) => v instanceof Boolean,
+            message: boolean.default,
+        })
+    }
+}
+
+class DateSchema extends Schema<Date> {
+    constructor() {
+        super({
+            type: "date",
+            check: (v: unknown) => v instanceof Date,
+            message: date.default,
         })
     }
 }
@@ -444,5 +522,7 @@ export const v = {
     array: <T>(schemas: T extends Schema ? T : never) => new ArraySchema(schemas),
     string: () => new StringSchema(),
     number: () => new NumberSchema(),
+    date: () => new DateSchema(),
+    boolean: () => new BooleanSchema(),
     ValidationError,
 }
