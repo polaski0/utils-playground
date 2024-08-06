@@ -552,7 +552,7 @@ class ValidationError<T = any> {
 
 export const v = {
     object: <T>(schema: T extends ObjectShape ? T : never) => new ObjectSchema(schema),
-    array: <T>(schemas: T extends Schema ? T : never) => new ArraySchema(schemas),
+    array: <T>(schema: T extends Schema ? T : never) => new ArraySchema(schema),
     string: () => new StringSchema(),
     number: () => new NumberSchema(),
     date: () => new DateSchema(),
@@ -562,3 +562,5 @@ export const v = {
     literal: <const T>(v: T) => new LiteralSchema(v),
     ValidationError,
 }
+
+export type { Infer };
