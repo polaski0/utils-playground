@@ -26,10 +26,16 @@ describe("string", () => {
         expect(result.valid).toBe(false)
     })
 
-    it("should not fail if there is no data", () => {
+    it("should not fail if there is no data to transform", () => {
         const strSchema = v.string().optional().trim()
         const result = strSchema.validate()
         expect(result.valid).toBe(true)
+    })
+
+    it("should prefix \"123\" to the validated value using transform() method", () => {
+        const strSchema = v.string().transform((v) => "123" + v)
+        const result = strSchema.validate("456")
+        expect(result.value).toBe("123456")
     })
 
     it("should allow undefined value and return true", () => {

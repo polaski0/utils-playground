@@ -170,6 +170,7 @@ abstract class Schema<Output = unknown> {
         return this
     }
 
+    // To add custom validations
     custom(
         cb: (v: Output) => boolean,
         message: string
@@ -179,6 +180,16 @@ abstract class Schema<Output = unknown> {
             cb: cb,
             message: message
         })
+    }
+
+    // To add custom transformation
+    transform(
+        cb: (v: Output) => Output,
+    ) {
+            return this._addTransformer({
+                name: "custom_transform",
+                cb
+            })
     }
 
     _addIssue(issue: Issue) {
