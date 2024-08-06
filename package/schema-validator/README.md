@@ -64,8 +64,13 @@ v.string();
 v.number();
 v.object();
 v.array();
-// v.date();
-// v.boolean();
+
+// Below this line are primitives that are work in progress
+v.date();
+v.boolean();
+v.null();
+v.undefined();
+v.literal();
 ```
 
 ### Optional Properties
