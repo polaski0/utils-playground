@@ -64,8 +64,6 @@ v.string();
 v.number();
 v.object();
 v.array();
-
-// Below this line are primitives that are work in progress
 v.date();
 v.boolean();
 v.null();
@@ -142,16 +140,16 @@ v.array(v.string()).min(1, "Must have a minimum length of 1.");
 ## Todo
 - [ ] Types
     - [ ] Allow generating of types based on schema 
-- [ ] Primitives
+- [x] Primitives
     - [x] string
     - [x] number
     - [x] object
     - [x] array
-    - [ ] date
-    - [ ] boolean
-    - [ ] null
-    - [ ] undefined
-    - [ ] literals
+    - [x] date
+    - [x] boolean
+    - [x] null
+    - [x] undefined
+    - [x] literal
 - [ ] Schema
     - [ ] Allow overriding of default message
 - [ ] Object Schema

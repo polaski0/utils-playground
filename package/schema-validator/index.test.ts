@@ -58,6 +58,66 @@ describe("string", () => {
     })
 })
 
+describe("number", () => {
+    it("should return true", () => {
+        const numSchema = v.number()
+        expect(numSchema.validate(1).valid).toBe(true)
+    })
+
+    it("should return false", () => {
+        const numSchema = v.number()
+        expect(numSchema.validate("").valid).toBe(false)
+    })
+})
+
+describe("date", () => {
+    it("should return true", () => {
+        const dateSchema = v.date()
+        expect(dateSchema.validate(new Date()).valid).toBe(true)
+    })
+
+    it("should return false", () => {
+        const dateSchema = v.date()
+        expect(dateSchema.validate("01/01/2000").valid).toBe(false)
+    })
+})
+
+describe("null", () => {
+    it("should return true", () => {
+        const nullSchema = v.null()
+        expect(nullSchema.validate(null).valid).toBe(true)
+    })
+
+    it("should return false", () => {
+        const nullSchema = v.null()
+        expect(nullSchema.validate().valid).toBe(false)
+    })
+})
+
+describe("undefined", () => {
+    it("should return true", () => {
+        const undefinedSchema = v.undefined()
+        expect(undefinedSchema.validate().valid).toBe(true)
+    })
+
+    it("should return false", () => {
+        const undefinedSchema = v.undefined()
+        expect(undefinedSchema.validate(1).valid).toBe(false)
+    })
+})
+
+describe("literal", () => {
+    it("should return true", () => {
+        const literalSchema = v.literal("123")
+        expect(literalSchema.validate("123").valid).toBe(true)
+    })
+
+    it("should return false", () => {
+        const literalSchema = v.literal("123")
+        expect(literalSchema.validate(123).valid).toBe(false)
+    })
+})
+
 describe("object", () => {
     it("should return true", () => {
         const objSchema = v.object({

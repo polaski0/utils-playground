@@ -186,10 +186,10 @@ abstract class Schema<Output = unknown> {
     transform(
         cb: (v: Output) => Output,
     ) {
-            return this._addTransformer({
-                name: "custom_transform",
-                cb
-            })
+        return this._addTransformer({
+            name: "custom_transform",
+            cb
+        })
     }
 
     _addIssue(issue: Issue) {
@@ -453,6 +453,39 @@ class DateSchema extends Schema<Date> {
     }
 }
 
+class NullSchema extends Schema<null> {
+    constructor() {
+        super({
+            type: "null",
+            check: (v: unknown) => typeof v === "object" && v === null,
+            message: common.default,
+        })
+    }
+}
+
+class UndefinedSchema extends Schema<undefined> {
+    constructor() {
+        super({
+            type: "null",
+            check: (v: unknown) => !v && v === undefined,
+            message: common.default,
+        })
+    }
+}
+
+class LiteralSchema<T> extends Schema<T> {
+    _value: T
+
+    constructor(value: T) {
+        super({
+            type: "literal",
+            check: (v: unknown) => v === value,
+            message: common.default,
+        })
+        this._value = value
+    }
+}
+
 // Errors
 type RecursiveErrorFormatting<T> = T extends ObjectShape ? {
     [K in keyof T]?: FormattedError<T[K]>
@@ -524,5 +557,8 @@ export const v = {
     number: () => new NumberSchema(),
     date: () => new DateSchema(),
     boolean: () => new BooleanSchema(),
+    null: () => new NullSchema(),
+    undefined: () => new UndefinedSchema(),
+    literal: <const T>(v: T) => new LiteralSchema(v),
     ValidationError,
 }
