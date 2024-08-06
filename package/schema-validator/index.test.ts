@@ -44,15 +44,15 @@ describe("string", () => {
         expect(result.valid).toBe(true)
     })
 
-    it("should throw ValidationError on empty input", () => {
+    it("should return ValidationError on empty input", () => {
         expect(strSchema.validate().errors).not.toBeUndefined()
     })
 
-    it("should throw ValidationError on wrong input type", () => {
+    it("should return ValidationError on wrong input type", () => {
         expect(strSchema.validate(1).errors).not.toBeUndefined()
     })
 
-    it("should throw ValidationError on optional but wrong input type", () => {
+    it("should return ValidationError on optional but wrong input type", () => {
         const strSchema = v.string().optional()
         expect(strSchema.validate(1).errors).not.toBeUndefined()
     })
@@ -90,7 +90,7 @@ describe("object", () => {
         expect(result.valid).toBe(true)
     })
 
-    it("should throw ValidationError on incomplete object", () => {
+    it("should return ValidationError on incomplete object", () => {
         const objSchema = v.object({
             name: v.string().min(2),
             address: v.object({
