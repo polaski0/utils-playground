@@ -9,20 +9,22 @@ describe("string", () => {
     })
 
     it("should return true for custom validation", () => {
-        const strSchema = v.string().custom(
-            (v) => v === "asdf",
-            "Not equal to asdf"
-        )
-        const result = strSchema.validate("asdf")
+        const result = strSchema
+            .custom(
+                (v) => v === "asdf",
+                "Not equal to asdf"
+            )
+            .validate("asdf")
         expect(result.valid).toBe(true)
     })
 
     it("should return false for custom validation", () => {
-        const strSchema = v.string().custom(
-            (v) => v === "asdf",
-            "Not equal to asdf"
-        )
-        const result = strSchema.validate("qwe")
+        const result = strSchema
+            .custom(
+                (v) => v === "asdf",
+                "Not equal to asdf"
+            )
+            .validate("qwe")
         expect(result.valid).toBe(false)
     })
 
@@ -33,7 +35,8 @@ describe("string", () => {
     })
 
     it("should prefix \"123\" to the validated value using transform() method", () => {
-        const strSchema = v.string().transform((v) => "123" + v)
+        const strSchema = v.string()
+            .transform((v) => "123" + v)
         const result = strSchema.validate("456")
         expect(result.value).toBe("123456")
     })
@@ -53,8 +56,33 @@ describe("string", () => {
     })
 
     it("should return ValidationError on optional but wrong input type", () => {
-        const strSchema = v.string().optional()
-        expect(strSchema.validate(1).errors).not.toBeUndefined()
+        expect(strSchema.optional().validate(1).errors).not.toBeUndefined()
+    })
+
+    it("should return ValidationError on optional but wrong input type", () => {
+        expect(strSchema.optional().validate(1).errors).not.toBeUndefined()
+    })
+
+    it("should return true on email validation", () => {
+        const strSchema = v.string().email()
+        expect(
+            strSchema
+                .validate("test@example.com")
+                .valid
+        )
+            .toBe(true)
+    })
+
+    it("should return false on email validation with special characters", () => {
+        // Sample emails with special characters
+        // àsdfg_test@domain.com
+        // ásdfg.test@domain.com
+        // sdfgɱ@domain.com
+        // eͫsdfg@domain.com
+        const strSchema = v.string().email()
+        const result = strSchema
+            .validate("sdfgɱ@domain.com")
+        expect(result.valid).toBe(false)
     })
 })
 
@@ -157,7 +185,7 @@ describe("object", () => {
                 street: v.string(),
                 bar: v.string(),
                 addtl: v.object({
-                    zipCode: v.string(),
+                    zipCode: v.number(),
                     foo: v.string()
                 }).optional()
             }),

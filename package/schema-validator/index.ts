@@ -415,6 +415,17 @@ class StringSchema extends Schema<string> {
         })
     }
 
+    email(message?: string) {
+        return this._addRule({
+            name: "email",
+            cb: (v: string) => {
+                const regex = new RegExp(/^[a-zA-Z0-9_+&*-]+(?:\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/)
+                return regex.test(v)
+            },
+            message: message ?? string.email,
+        })
+    }
+
     trim() {
         return this._addTransformer({
             name: "trim",

@@ -34,6 +34,7 @@ export interface StringLocale {
     default?: Message;
     min?: Message;
     max?: Message;
+    email?: Message;
     matches?: Message;
 }
 
@@ -71,5 +72,6 @@ export const string: Required<StringLocale> = {
     default: "This field must be a string.",
     min: "This string must be at least {min} characters long.",
     max: "This string cannot be longer than {max} characters.",
+    email: "This value is not a valid email address.",
     matches: "This string must match the required pattern.",
 }
