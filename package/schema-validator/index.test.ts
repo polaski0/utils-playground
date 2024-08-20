@@ -1,4 +1,4 @@
-import { v, Infer } from "."
+import * as v from "."
 
 describe("string", () => {
     const strSchema = v.string()

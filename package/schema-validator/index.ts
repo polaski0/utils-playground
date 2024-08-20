@@ -219,7 +219,7 @@ abstract class Schema<Output = unknown> {
 
 type ObjectShape = Record<string, Schema>
 
-type Infer<T extends Schema> = T extends Schema<infer I> ? I : never
+export type Infer<T extends Schema> = T extends Schema<infer I> ? I : never
 
 type ObjectOutput<T> = T extends ObjectShape ? {
     [K in keyof T]: Infer<T[K]>
@@ -561,17 +561,25 @@ class ValidationError<T = any> {
     }
 }
 
-export const v = {
-    object: <T>(schema: T extends ObjectShape ? T : never) => new ObjectSchema(schema),
-    array: <T>(schema: T extends Schema ? T : never) => new ArraySchema(schema),
-    string: () => new StringSchema(),
-    number: () => new NumberSchema(),
-    date: () => new DateSchema(),
-    boolean: () => new BooleanSchema(),
-    null: () => new NullSchema(),
-    undefined: () => new UndefinedSchema(),
-    literal: <const T>(v: T) => new LiteralSchema(v),
+const objectType = <T>(schema: T extends ObjectShape ? T : never) => new ObjectSchema(schema);
+const arrayType = <T>(schema: T extends Schema ? T : never) => new ArraySchema(schema);
+const stringType = () => new StringSchema();
+const numberType = () => new NumberSchema();
+const dateType = () => new DateSchema();
+const booleanType = () => new BooleanSchema();
+const nullType = () => new NullSchema();
+const undefinedType = () => new UndefinedSchema();
+const literalType = <const T>(v: T) => new LiteralSchema(v);
+
+export {
+    objectType as object,
+    arrayType as array,
+    stringType as string,
+    numberType as number,
+    dateType as date,
+    booleanType as boolean,
+    nullType as null,
+    undefinedType as undefined,
+    literalType as literal,
     ValidationError,
 }
-
-export type { Infer };
