@@ -139,7 +139,21 @@ v.array(v.string()).min(1, "Must have a minimum length of 1.");
 
 ## Todo
 - [ ] Types
-    - [ ] Allow generating of types based on schema 
+    - [x] Allow generating of types based on schema 
+    - [ ] Fix `Infer` to generate correct schema on schemas with `optional` and `null` such that it
+    will output the following type below.
+
+    ```ts
+        const user = v.object({
+                first_name: v.string(),
+                middle_name: v.string().optional(),
+                last_name: v.string(),
+            })
+
+        type TUser = Infer<typeof user>
+        // ^ middle_name?: string | undefined
+    ```
+    
 - [x] Primitives
     - [x] string
     - [x] number
