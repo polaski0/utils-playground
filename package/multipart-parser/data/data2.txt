@@ -1,0 +1,26 @@
+
+--delimiter123
+
+Content-Disposition: form-data; name="field1"
+
+foo
+bar
+
+--delimiter123
+
+Content-Disposition: form-data; name="field2"
+
+fizz
+buzz
+
+--delimiter123
+
+Content-Disposition: form-data; name="file" filename="example.txt"
+
+The quick       brown
+
+fox jumps over
+the         lazy dog
+
+--delimiter123--
+

@@ -1,4 +1,5 @@
 declare const header: {
-    "content-length": number,
-    "content-type": string
+    "Content-Type": string
 }
+
+export default header;
