@@ -29,7 +29,7 @@ describe("string", () => {
     })
 
     it("should not fail if there is no data to transform", () => {
-        const strSchema = v.string().optional().trim()
+        const strSchema = v.string().trim().optional()
         const result = strSchema.validate()
         expect(result.valid).toBe(true)
     })

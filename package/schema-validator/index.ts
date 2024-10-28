@@ -165,7 +165,9 @@ abstract class Schema<Output = unknown> {
         return returnValue
     }
 
+    // Fix optional method
     optional() {
+        // return new Optional(this)
         this._options.required = false
         return this
     }
@@ -214,6 +216,18 @@ abstract class Schema<Output = unknown> {
     _addTransformer(transformer: Transformer) {
         this._transformers.push(transformer)
         return this
+    }
+}
+
+// Fix optional type
+class Optional<T extends Schema> extends Schema<Infer<T> | undefined> {
+    constructor(schema: T) {
+        super({
+            type: "optional",
+            check: (v: unknown) => true,
+            message: common.default,
+        })
+        this._options.required = false
     }
 }
 
