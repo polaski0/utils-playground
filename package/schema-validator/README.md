@@ -1,176 +1,69 @@
-# Schema Validator
+# Schema Validator 1
+
 
 ## Table of Contents
 
 * [Introduction](#introduction)
-* [How to Use](#how-to-use) - WIP
-* [Methods](#methods) - WIP
-* [How it Works](#how-it-works) - WIP
-* [Todo](#todo) - WIP
 
 ## Introduction
 
 Schema validator with no third-party dependencies.
 
-### Inspired by
+## Reference
 
-Different libraries I used as a reference material to build this:
-* [valita](https://github.com/badrap/valita)
-* [zod](https://github.com/colinhacks/zod)
+[superstruct](https://github.com/ianstormtaylor/superstruct/blob/main/src/structs/types.ts)
 
-## How to use
-
-### Basic Usage
-
-To check if a certain value is of type primitive, you can use a specific primitive. 
-For example, `v.string()` is used to check if the value is a type of string:
+## Possible Reference
 
 ```js
-import { v } from "."
+// Superstruct
+// Define a `User` struct.
+const User = object({
+  id: number(),
+  name: string(),
+})
 
-const str = v.string();
-str.validate("Hello, world!");
-// Valid
+// Define an `Article` struct, composing the `User` struct in the article's
+// `author` property.
+const Article = object({
+  id: number(),
+  title: string(),
+  published_at: date(),
+  author: User,
+})
+
+// Define data to be validated.
+const data = {
+  id: 1,
+  title: 'Hello, World!',
+  published_at: new Date(),
+  author: {
+    id: 1,
+    name: 'Jane Smith',
+  },
+}
+
+// Validate the data. In this case, the data is valid, so it won't throw.
+assert(data, Article)
 ```
-
-Parsing values that does not align with its primitive returns an error:
 
 ```js
-str.validate(1);
-// Invalid
+// Ajv
+const Ajv = require("ajv")
+const ajv = new Ajv()
+
+const schema = {
+  type: "object",
+  properties: {
+    foo: {type: "integer"},
+    bar: {type: "string"}
+  },
+  required: ["foo"],
+  additionalProperties: false
+}
+
+const data = {foo: 1, bar: "abc"}
+const valid = ajv.validate(schema, data)
+if (!valid) console.log(ajv.errors)
 ```
 
-You can use different primitives to build an object schema:
-```js
-const user = v.object({
-    username: v.string(),
-    email: v.string(),
-});
-
-user.validate({
-    username: "john_doe",
-    email: "john_doe@exmaple.com",
-});
-// Valid
-```
-
-### Primitive Types
-
-Supports the following primitive types:
-```js
-import { v } from ".";
-
-v.string();
-v.number();
-v.object();
-v.array();
-v.date();
-v.boolean();
-v.null();
-v.undefined();
-v.literal();
-```
-
-### Optional Properties
-
-To allow `null` and `undefined` values, simply add `.optional()` on the schema.
-
-```js
-const user = v.object({
-    first_name: v.string(),
-     // Not everyone have a middle name
-    middle_name: v.string().optional(),
-    last_name: v.string(),
-});
-
-user.validate({
-    first_name: "John",
-    last_name: "Doe"
-});
-// Valid
-```
-
-> This is not limited to object schema.
-
-## Methods - WIP
-
-### Strings
-
-```js
-v.string().min(1);
-v.string().max(5);
-```
-
-The error messages can be modified by passing a second parameter to the methods:
-
-```js
-v.string().min(1, "Must have a minimum length of 1.");
-```
-
-### Number
-
-Not yet implemented
-
-### Date
-
-Not yet implemented
-
-### Boolean
-
-Not yet implemented
-
-### Object
-
-Not yet implemented
-
-### Array
-
-```js
-v.array(v.string()).min(1);
-v.array(v.string()).max(5);
-```
-
-The error messages can be modified by passing a second parameter to the methods:
-
-```js
-v.array(v.string()).min(1, "Must have a minimum length of 1.");
-```
-
-
-## Todo
-- [ ] Types
-    - [x] Allow generating of types based on schema 
-    - [ ] Fix `Infer` to generate correct schema on schemas with `optional` and `null` such that it
-    will output the following type below.
-
-    ```ts
-        const user = v.object({
-                first_name: v.string(),
-                middle_name: v.string().optional(),
-                last_name: v.string(),
-            })
-
-        type TUser = Infer<typeof user>
-        // ^ middle_name?: string | undefined
-    ```
-    
-- [x] Primitives
-    - [x] string
-    - [x] number
-    - [x] object
-    - [x] array
-    - [x] date
-    - [x] boolean
-    - [x] null
-    - [x] undefined
-    - [x] literal
-- [ ] Schema
-    - [ ] Allow overriding of default message
-- [ ] Object Schema
-    - [ ] Stop on first error
-    - [ ] Strip unvalidated keys / keys that isn't included in schema
-- [ ] Methods
-    - [ ] Expand validation methods of different primitives
-- [ ] Tranformer
-- [ ] Coercion
-- [ ] Async validation

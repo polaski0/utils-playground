@@ -8,7 +8,7 @@
   "keywords": [],
   "author": "Meynard",
   "license": "ISC",
-  "description": "Zod-like schema validator",
+  "description": "Schema validator",
   "devDependencies": {
     "@types/jest": "^29.5.12",
     "jest": "^29.7.0",
