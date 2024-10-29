@@ -3,9 +3,7 @@ import { applyOptions } from "../../methods/applyOptions"
 import { parseArgs } from "../../methods/parseArgs"
 import { BaseSchema, Options } from "../../types"
 
-type StringSchema<TOutput = string> = BaseSchema<string, TOutput> & {
-  schema: "string"
-}
+type StringSchema<TOutput = string> = BaseSchema<string, TOutput>
 
 /**
   * Creates a string validation schema
@@ -19,19 +17,18 @@ export function string(
   const { message, opts } = parseArgs(arg1, arg2)
 
   return {
-    schema: "string",
     parse(input, info) {
       if (typeof input !== "string") {
         throw new ValidationError([
           {
+            type: "string",
             message: message || "Invalid type",
             input: input,
-            ...info
+            ...info,
           }
         ])
       }
-
-      return applyOptions(input, opts)
+      return applyOptions(input, opts, { ...info, type: "string" })
     },
   }
 }

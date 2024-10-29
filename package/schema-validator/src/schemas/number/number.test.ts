@@ -1,5 +1,4 @@
 import { parse } from "../../methods/parse"
-import { transform } from "../../transformers/transform"
 import { max } from "../../validators/max"
 import { min } from "../../validators/min"
 import { number } from "./number"

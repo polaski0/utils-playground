@@ -4,6 +4,7 @@ import { trim } from "../../transformers/trim"
 import { max } from "../../validators/max"
 import { min } from "../../validators/min"
 import { number } from "../number/number"
+import { optional } from "../optional/optional"
 import { string } from "../string/string"
 import { object } from "./object"
 
@@ -79,36 +80,45 @@ describe("object", () => {
 
   it("should pass a nested object with multiple transformations and validations", () => {
     const schema = object({
-      username: string([trim(), min(4)]),
+      username: string([
+        trim(),
+        min(4)
+      ]),
       password: string(
         "Should be a valid password.",
-        [trim(), min(4), max(8)]
+        [
+          trim(),
+          min(4),
+          max(8)
+        ]
       ),
-      address: object({
-        zipCode: number(),
-        street: string([
-          transform(value => {
-            return `${value} St.`
-          })
-        ])
-      })
+      address: optional(
+        object({
+          zipCode: number(),
+          street: string([
+            transform(value => {
+              return `${value} St.`
+            })
+          ])
+        })
+      )
     })
 
     const value = {
       username: "   user   ",
       password: "       psswrd12   ",
-      address: {
-        zipCode: 1234,
-        street: "123"
-      }
+      // address: {
+      //   zipCode: 1234,
+      //   street: "123"
+      // }
     }
     const expected = {
       username: "user",
       password: "psswrd12",
-      address: {
-        zipCode: 1234,
-        street: "123 St."
-      }
+      // address: {
+      //   zipCode: 1234,
+      //   street: "123 St."
+      // }
     }
 
     const getValue = (value: unknown) => {

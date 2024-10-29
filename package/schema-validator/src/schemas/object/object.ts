@@ -21,9 +21,7 @@
 import { Issue, ValidationError } from "../../error";
 import { BaseSchema } from "../../types";
 
-type ObjectSchema<TOutput = object> = BaseSchema<object, TOutput> & {
-  schema: "object"
-}
+type ObjectSchema<TOutput = object> = BaseSchema<object, TOutput>
 
 /**
   * Creates an object validation schema
@@ -37,7 +35,6 @@ export function object<TSchema>(
   message?: string,
 ): ObjectSchema {
   return {
-    schema: "object",
     parse(input, info) {
       const issues: Issue[] = []
       const output = {} as Record<keyof TSchema, unknown>
@@ -52,6 +49,7 @@ export function object<TSchema>(
         input === null
       ) {
         issues.push({
+          type: "object",
           message: message || "Invalid type",
           path: info?.path, // Fix path
           input: input
@@ -73,13 +71,14 @@ export function object<TSchema>(
 
         try {
           const parsedValue = _s.parse(_val, {
-            ...info,
             input: _val,
-            path: info?.path ? `${info?.path}.${key}` : key // Fix path builder
+            path: info?.path ? `${info?.path}.${key}` : key, // Fix path builder
+            ...info,
           })
 
+          // Only includes existing keys in the schema.
           if (input && key in input) {
-            output[key] = parsedValue // Only includes existing keys in the schema.
+            output[key] = parsedValue
           }
         } catch (error) {
           issues.push(...(error as ValidationError).issues)

@@ -1,11 +1,11 @@
-// Objectives
-// - Add more context to the error
-//  - Path for `object` schema
-//  - Schema type
-//  - Input value
-//  - Expected output (?)
+export type SchemaType =
+  | "array"
+  | "object"
+  | "string"
+  | "number"
 
 export type Issue = {
+  type: SchemaType
   message: string
   input: unknown
   path?: string
@@ -19,4 +19,8 @@ export class ValidationError extends Error {
     this.name = "ValidationError"
     this.issues = issues
   }
+}
+
+export function format() {
+  // Convert based on the existing path.
 }

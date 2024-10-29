@@ -3,9 +3,7 @@ import { applyOptions } from "../../methods/applyOptions"
 import { parseArgs } from "../../methods/parseArgs"
 import { BaseSchema, Options } from "../../types"
 
-type NumberSchema<TOutput = number> = BaseSchema<number, TOutput> & {
-  schema: "number"
-}
+type NumberSchema<TOutput = number> = BaseSchema<number, TOutput>
 
 /**
   * Creates a number validation schema
@@ -19,19 +17,18 @@ export function number(
   const { message, opts } = parseArgs(arg1, arg2)
 
   return {
-    schema: "number",
     parse(input, info) {
       if (typeof input !== "number") {
         throw new ValidationError([
           {
+            type: "number",
             message: message || "Invalid type",
             input: input,
             ...info
           }
         ])
       }
-
-      return applyOptions(input, opts)
+      return applyOptions(input, opts, { ...info, type: "number" })
     },
   }
 }
