@@ -3,7 +3,7 @@ import { applyOptions } from "../../methods/applyOptions"
 import { parseArgs } from "../../methods/parseArgs"
 import { BaseSchema, Options } from "../../types"
 
-type NumberSchema<TOutput = number> = BaseSchema<number, TOutput>
+export type NumberSchema<TOutput = number> = BaseSchema<number, TOutput>
 
 /**
   * Creates a number validation schema

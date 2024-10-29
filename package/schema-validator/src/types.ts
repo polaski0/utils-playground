@@ -10,8 +10,12 @@ export type Info = Partial<
 
 export type OptionsInfo = Info & Pick<Issue, "type">
 
+export type Options<TValue> = ((input: TValue, info: OptionsInfo) => TValue)[]
+
 export type BaseSchema<TInput = any, TOutput = TInput> = {
   parse(input: TInput, info?: Info): TOutput
+  _types?: { input: TInput, output: TOutput } // Internal types
 }
 
-export type Options<TValue> = ((input: TValue, info: OptionsInfo) => TValue)[]
+export type Input<TSchema extends BaseSchema> = NonNullable<TSchema["_types"]>["input"]
+export type Output<TSchema extends BaseSchema> = NonNullable<TSchema["_types"]>["output"]

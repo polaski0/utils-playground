@@ -1,8 +1,8 @@
-import { BaseSchema } from "../../types"
+import { BaseSchema, Input, Output } from "../../types"
 
 type OptionalSchema<
   TInput extends BaseSchema,
-  TOutput = TInput | undefined
+  TOutput = Output<TInput> | undefined
 > = BaseSchema<TInput, TOutput>
 
 /**

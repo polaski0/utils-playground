@@ -84,13 +84,15 @@ describe("object", () => {
         trim(),
         min(4)
       ]),
-      password: string(
-        "Should be a valid password.",
-        [
-          trim(),
-          min(4),
-          max(8)
-        ]
+      password: optional(
+        string(
+          "Should be a valid password.",
+          [
+            trim(),
+            min(4),
+            max(8)
+          ]
+        )
       ),
       address: optional(
         object({

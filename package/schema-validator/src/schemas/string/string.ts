@@ -3,7 +3,7 @@ import { applyOptions } from "../../methods/applyOptions"
 import { parseArgs } from "../../methods/parseArgs"
 import { BaseSchema, Options } from "../../types"
 
-type StringSchema<TOutput = string> = BaseSchema<string, TOutput>
+export type StringSchema<TOutput = string> = BaseSchema<string, TOutput>
 
 /**
   * Creates a string validation schema

@@ -21,23 +21,25 @@
 import { Issue, ValidationError } from "../../error";
 import { BaseSchema } from "../../types";
 
-type ObjectSchema<TOutput = object> = BaseSchema<object, TOutput>
+export type TShape<T> = {
+  [K in keyof T]: T[K] extends BaseSchema
+  ? T[K]
+  : never
+}
+
+export type ObjectSchema<TInput, TOutput = TInput> = BaseSchema<TShape<TInput>, TOutput>
 
 /**
   * Creates an object validation schema
   */
 export function object<TSchema>(
-  schema: {
-    [K in keyof TSchema]: TSchema[K] extends BaseSchema
-    ? TSchema[K]
-    : never
-  },
+  schema: TShape<TSchema>,
   message?: string,
-): ObjectSchema {
+): ObjectSchema<TSchema> {
   return {
     parse(input, info) {
       const issues: Issue[] = []
-      const output = {} as Record<keyof TSchema, unknown>
+      const output = {} as Record<keyof TShape<TSchema>, any> // Fix `any` type
 
       // Should be controlled by a flag such as `abortEarly`
       // to determine if it will continue to validate values
