@@ -1,4 +1,4 @@
-import { BaseSchema } from "../types";
+import { BaseSchema, Output } from "../types";
 
 /**
   * Validates an input value against a schema.
@@ -17,6 +17,6 @@ import { BaseSchema } from "../types";
 export function parse<TSchema extends BaseSchema>(
   schema: TSchema,
   input: unknown
-) {
+): Output<TSchema> {
   return schema.parse(input)
 }

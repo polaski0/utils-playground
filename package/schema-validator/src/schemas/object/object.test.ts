@@ -45,6 +45,15 @@ describe("object", () => {
       })
     })
 
+    const expected = {
+      fizz: {
+        buzz: "fizzbuzz",
+        foo: {
+          bar: "foobar"
+        }
+      }
+    }
+
     expect(() => parse(schema, {
       fizz: {
         buzz: "fizzbuzz",
@@ -53,6 +62,17 @@ describe("object", () => {
         }
       }
     })).not.toThrow()
+
+    const result = parse(schema, {
+      fizz: {
+        buzz: "fizzbuzz",
+        foo: {
+          bar: "foobar"
+        },
+        fizz: "buzz"
+      }
+    })
+    expect(result).toEqual(expected)
   })
 
   it("should throw an error", () => {

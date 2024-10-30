@@ -92,10 +92,7 @@ export function object<TSchema extends ObjectShape>(
             ...info,
           })
 
-          // Only includes existing keys in the schema.
-          if (input && key in (input as Record<string, any>)) {
-            output[key] = parsedValue
-          }
+          output[key] = parsedValue
         } catch (error) {
           issues.push(...(error as ValidationError).issues)
         }
