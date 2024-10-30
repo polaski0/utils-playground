@@ -19,3 +19,7 @@ export type BaseSchema<TInput = any, TOutput = TInput> = {
 
 export type Input<TSchema extends BaseSchema> = NonNullable<TSchema["_types"]>["input"]
 export type Output<TSchema extends BaseSchema> = NonNullable<TSchema["_types"]>["output"]
+
+// export type Infer<TInput extends BaseSchema, TSchema = Input<TInput>> = {
+//   [K in keyof TSchema]: // ???
+// }
