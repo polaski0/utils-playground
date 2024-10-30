@@ -19,27 +19,41 @@
 // caused an error.
 
 import { Issue, ValidationError } from "../../error";
-import { BaseSchema } from "../../types";
+import { BaseSchema, Output } from "../../types";
 
-export type TShape<T> = {
-  [K in keyof T]: T[K] extends BaseSchema
-  ? T[K]
-  : never
-}
+type ObjectShape = Record<string, BaseSchema>
 
-export type ObjectSchema<TInput, TOutput = TInput> = BaseSchema<TShape<TInput>, TOutput>
+// To type as exactly as the generic, removing any
+// additional type operators for a cleaner look.
+type Is<T> = T
+type Mapper<T> = Is<{
+  [K in keyof T]: T[K]
+}>
+
+type ObjectOutput<TInput extends ObjectShape> =
+  Mapper<{
+    [K in keyof TInput]: Output<TInput[K]>
+  }>
+
+export type ObjectSchema<
+  TInput extends ObjectShape,
+  TOutput = ObjectOutput<TInput>
+> = BaseSchema<
+  TInput,
+  TOutput
+>
 
 /**
   * Creates an object validation schema
   */
-export function object<TSchema>(
-  schema: TShape<TSchema>,
+export function object<TSchema extends ObjectShape>(
+  schema: TSchema,
   message?: string,
 ): ObjectSchema<TSchema> {
   return {
     parse(input, info) {
       const issues: Issue[] = []
-      const output = {} as Record<keyof TShape<TSchema>, any> // Fix `any` type
+      const output = {} as any; // Fix `any` type
 
       // Should be controlled by a flag such as `abortEarly`
       // to determine if it will continue to validate values
@@ -65,7 +79,7 @@ export function object<TSchema>(
         // the object before accessing to prevent errors being thrown when
         // accessing undefined values
         let _val: unknown
-        if (input && key in input) {
+        if (input && key in (input as Record<string, any>)) {
           _val = (input as Record<string | number | symbol, unknown>)[key]
         } else {
           _val = undefined
@@ -79,7 +93,7 @@ export function object<TSchema>(
           })
 
           // Only includes existing keys in the schema.
-          if (input && key in input) {
+          if (input && key in (input as Record<string, any>)) {
             output[key] = parsedValue
           }
         } catch (error) {
@@ -95,4 +109,3 @@ export function object<TSchema>(
     }
   }
 }
-

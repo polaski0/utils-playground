@@ -1,6 +1,7 @@
 import { parse } from "../../methods/parse"
 import { transform } from "../../transformers/transform"
 import { trim } from "../../transformers/trim"
+import { Infer } from "../../types"
 import { max } from "../../validators/max"
 import { min } from "../../validators/min"
 import { number } from "../number/number"
