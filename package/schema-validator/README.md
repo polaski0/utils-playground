@@ -20,8 +20,8 @@ Schemas.
 - [x] number
 - [x] object
 - [x] array
-- [] date
-- [] boolean
+- [x] date
+- [x] boolean
 
 ### Modifiers
 

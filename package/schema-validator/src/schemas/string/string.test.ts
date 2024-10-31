@@ -3,6 +3,7 @@ import { transform } from "../../transformers/transform"
 import { trim } from "../../transformers/trim"
 import { max } from "../../validators/max"
 import { min } from "../../validators/min"
+import { oneOf } from "../../validators/oneOf"
 import { string } from "./string"
 
 describe("string", () => {
@@ -68,5 +69,13 @@ describe("string", () => {
     )
     const value = "   12345678    "
     expect(() => parse(schema, value)).not.toThrow()
+  })
+
+  it("should only accept specific values", () => {
+    const schema = string([oneOf(["foo", "bar"])])
+    expect(() => parse(schema, "foo")).not.toThrow()
+    expect(() => parse(schema, "bar")).not.toThrow()
+    expect(() => parse(schema, "fizz")).toThrow()
+    expect(() => parse(schema, "buzz")).toThrow()
   })
 })

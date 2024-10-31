@@ -1,6 +1,7 @@
 import { parse } from "../../methods/parse"
 import { max } from "../../validators/max"
 import { min } from "../../validators/min"
+import { oneOf } from "../../validators/oneOf"
 import { number } from "./number"
 
 describe("number", () => {
@@ -35,6 +36,14 @@ describe("number", () => {
     const schema = number([min(1), max(2)])
     expect(() => parse(schema, 0)).toThrow()
     expect(() => parse(schema, -1)).toThrow()
+    expect(() => parse(schema, 3)).toThrow()
+  })
+
+  it("should only accept specific values", () => {
+    const schema = number([oneOf([1, 2])])
+    expect(() => parse(schema, 1)).not.toThrow()
+    expect(() => parse(schema, 2)).not.toThrow()
+    expect(() => parse(schema, 0)).toThrow()
     expect(() => parse(schema, 3)).toThrow()
   })
 })
