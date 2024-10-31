@@ -3,6 +3,8 @@ export type SchemaType =
   | "object"
   | "string"
   | "number"
+  | "date"
+  | "boolean"
 
 export type Issue = {
   type: SchemaType
