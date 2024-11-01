@@ -1,24 +1,20 @@
 import { BaseSchema, Output } from "../../types"
 
-type OptionalSchema<
+type NullableSchema<
   TInput extends BaseSchema,
   TOutput = Output<TInput> | undefined
 > = BaseSchema<TInput, TOutput>
 
 /**
-  * Creates an optional schema
+  * Creates an nullable schema
   */
-export function optional<TSchema extends BaseSchema>(
+export function nullable<TSchema extends BaseSchema>(
   schema: TSchema,
-): OptionalSchema<TSchema> {
+): NullableSchema<TSchema> {
   return {
     parse(input, info) {
-      if (
-        typeof input === "undefined" &&
-        input === undefined &&
-        input !== null
-      ) {
-        return undefined
+      if (!input || input === null) {
+        return null
       }
 
       return schema.parse(input, info)
