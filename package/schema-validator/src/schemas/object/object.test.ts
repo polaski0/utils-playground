@@ -129,18 +129,10 @@ describe("object", () => {
     const value = {
       username: "   user   ",
       password: "       psswrd12   ",
-      // address: {
-      //   zipCode: 1234,
-      //   street: "123"
-      // }
     }
     const expected = {
       username: "user",
       password: "psswrd12",
-      // address: {
-      //   zipCode: 1234,
-      //   street: "123 St."
-      // }
     }
 
     const getValue = (value: unknown) => {
