@@ -15,8 +15,7 @@ export function optional<TSchema extends BaseSchema>(
     parse(input, info) {
       if (
         typeof input === "undefined" &&
-        input === undefined &&
-        input !== null
+        input === undefined
       ) {
         return undefined
       }

@@ -1,35 +1,30 @@
 import { parse } from "../../methods/parse"
 import { object } from "../object/object"
 import { string } from "../string/string"
-import { optional } from "./optional"
+import { nullable } from "./nullable"
 
-describe("optional", () => {
-  it("should allow undefined values", () => {
-    const schema = optional(string())
+describe("nullable", () => {
+  it("should only allow null values", () => {
+    const schema = nullable(string())
 
-    expect(() => parse(schema, undefined)).not.toThrow()
-    expect(() => parse(schema, "")).not.toThrow()
-    expect(() => parse(schema, null)).toThrow()
-    expect(() => parse(schema, 0)).toThrow()
-    expect(() => parse(schema, false)).toThrow()
+    expect(() => parse(schema, null)).not.toThrow()
+    expect(() => parse(schema, undefined)).toThrow()
     expect(() => parse(schema, [])).toThrow()
     expect(() => parse(schema, {})).toThrow()
+    expect(() => parse(schema, 0)).toThrow()
+    expect(() => parse(schema, false)).toThrow()
   })
 
-  it("should allow undefined values on objects", () => {
+  it("should only allow null values on objects", () => {
     const schema = object({
       first_name: string(),
-      middle_name: optional(string()),
+      middle_name: nullable(string()),
       last_name: string(),
     })
 
     expect(() => parse(schema, {
       first_name: "John",
-      last_name: "Doe",
-    })).not.toThrow()
-    expect(() => parse(schema, {
-      first_name: "John",
-      middle_name: undefined,
+      middle_name: null,
       last_name: "Doe",
     })).not.toThrow()
     expect(() => parse(schema, {
@@ -39,7 +34,6 @@ describe("optional", () => {
     })).toThrow()
     expect(() => parse(schema, {
       first_name: "John",
-      middle_name: null,
       last_name: "Doe",
     })).toThrow()
   })

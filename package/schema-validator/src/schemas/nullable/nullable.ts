@@ -2,7 +2,7 @@ import { BaseSchema, Output } from "../../types"
 
 type NullableSchema<
   TInput extends BaseSchema,
-  TOutput = Output<TInput> | undefined
+  TOutput = Output<TInput> | null
 > = BaseSchema<TInput, TOutput>
 
 /**
@@ -13,7 +13,7 @@ export function nullable<TSchema extends BaseSchema>(
 ): NullableSchema<TSchema> {
   return {
     parse(input, info) {
-      if (!input || input === null) {
+      if (input === null) {
         return null
       }
 
