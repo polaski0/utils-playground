@@ -91,9 +91,9 @@ export function object<TSchema extends ObjectShape>(
 
         try {
           const parsedValue = _s.parse(_val, {
+            ...info,
             input: _val,
             path: info?.path ? `${info?.path}.${key}` : key, // Fix path builder
-            ...info,
           })
 
           output[key] = parsedValue

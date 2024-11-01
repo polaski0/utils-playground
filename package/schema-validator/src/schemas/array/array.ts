@@ -1,4 +1,4 @@
-import { ValidationError } from "../../error"
+import { Issue, ValidationError } from "../../error"
 import { applyOptions } from "../../methods/applyOptions"
 import { parseArgs } from "../../methods/parseArgs"
 import { BaseSchema, Options } from "../../types"
@@ -30,8 +30,17 @@ export function array(
         ])
       }
 
+      const issues: Issue[] = []
       for (const value of input) {
-        schema.parse(value, info)
+        try {
+          schema.parse(value, { ...info, input: value })
+        } catch (err) {
+          issues.push(...(err as ValidationError).issues)
+        }
+      }
+
+      if (issues.length) {
+        throw new ValidationError(issues)
       }
 
       return applyOptions(input, opts, { ...info, type: "array" })

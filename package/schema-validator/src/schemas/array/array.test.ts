@@ -23,6 +23,12 @@ describe("array", () => {
     expect(() => parse(numberArraySchema, [1, 2, 3])).not.toThrow()
   })
 
+  it("should throw on empty arrays", () => {
+    const schema = array(string([min(1)]), [min(1)])
+
+    expect(() => parse(schema, [])).toThrow()
+  })
+
   it("should throw error on mismatched array types", () => {
     const schema = array(string())
 
@@ -33,7 +39,7 @@ describe("array", () => {
   it("should validate schemas with multiple options", () => {
     const schema = array(string([min(1), max(2)]))
 
-    expect(() => parse(schema, ["h","e","ll","o",])).not.toThrow()
+    expect(() => parse(schema, ["h", "e", "ll", "o",])).not.toThrow()
     expect(() => parse(schema, ["hello", "world"])).toThrow()
     expect(() => parse(schema, ["", "hi"])).toThrow()
   })

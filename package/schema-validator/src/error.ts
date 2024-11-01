@@ -23,6 +23,16 @@ export class ValidationError extends Error {
   }
 }
 
-export function format() {
-  // Convert based on the existing path.
+// Convert based on the existing path.
+export function format(error: ValidationError) {
+  const issues = error.issues
+  const output = {}
+
+  for (const issue of issues) {
+    if (issue.path) {
+
+    }
+    // console.log(issue)
+  }
+  console.log(issues)
 }

@@ -8,7 +8,7 @@ export function oneOf<TInput>(selections: TInput[], message?: string) {
       throw new ValidationError([
         {
           input: input,
-          message: message || `"${input}" is not included on the selections.`,
+          message: message || `"${input}" is not included on the selections: ${selections.map(val => `"${val}"`).join(", ")}.`,
           ...info
         }
       ])
