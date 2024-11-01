@@ -37,10 +37,10 @@ Validators.
 - [x] min
 - [x] max
 - [x] oneOf
-- [] email
-- [] matches
+- [x] email
+- [x] matches
+- [x] custom
 - [] equals
-- [] custom
 
 ### Transformers
 

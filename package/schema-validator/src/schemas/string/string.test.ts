@@ -1,6 +1,8 @@
 import { parse } from "../../methods/parse"
 import { transform } from "../../transformers/transform"
 import { trim } from "../../transformers/trim"
+import { custom } from "../../validators/custom"
+import { email } from "../../validators/email"
 import { max } from "../../validators/max"
 import { min } from "../../validators/min"
 import { oneOf } from "../../validators/oneOf"
@@ -77,5 +79,22 @@ describe("string", () => {
     expect(() => parse(schema, "bar")).not.toThrow()
     expect(() => parse(schema, "fizz")).toThrow()
     expect(() => parse(schema, "buzz")).toThrow()
+  })
+
+  it("should validate custom validations", () => {
+    const schema = string([custom((value) => {
+      return value === "foo"
+    })])
+    expect(() => parse(schema, "foo")).not.toThrow()
+    expect(() => parse(schema, "fo")).toThrow()
+    expect(() => parse(schema, "foO")).toThrow()
+  })
+
+  it("should accept emails", () => {
+    const schema = string([email()])
+    expect(() => parse(schema, "john@example.com")).not.toThrow()
+    expect(() => parse(schema, "john_doe123@example.com")).not.toThrow()
+    expect(() => parse(schema, "doe@example")).toThrow()
+    expect(() => parse(schema, "!john@example.com")).toThrow()
   })
 })
