@@ -26,13 +26,28 @@ export class ValidationError extends Error {
 // Convert based on the existing path.
 export function format(error: ValidationError) {
   const issues = error.issues
-  const output = {}
+  const output = {} as Record<string, any>
 
-  for (const issue of issues) {
-    if (issue.path) {
+  for (const idx in issues) {
+    const path = issues[idx].path
+    let current = output
 
+    if (path) {
+      const keys = path.split(".")
+
+      for (let i = 0; i < keys.length; i++) {
+        if (i !== keys.length - 1) {
+          current = current[keys[i]]
+        } else {
+          current[keys[i]] = issues[idx]
+        }
+      }
+    } else {
+      // Fix format statement for non-object schema or
+      // errors without a `path`
+      break
     }
-    // console.log(issue)
   }
-  console.log(issues)
+
+  return output
 }

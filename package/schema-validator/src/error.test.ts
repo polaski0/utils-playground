@@ -60,7 +60,7 @@ describe("error", () => {
       const schema = string([min(1), oneOf(["h", "e", "l", "o",])])
       parse(schema, "")
     } catch (err) {
-      format((err as ValidationError))
+      console.log(format((err as ValidationError)))
     }
   })
 })
