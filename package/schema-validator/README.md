@@ -28,7 +28,7 @@ Schemas.
 Modifiers.
 
 - [x] optional
-- [] nullable
+- [x] nullable
 
 ### Validators
 
@@ -36,8 +36,8 @@ Validators.
 
 - [x] min
 - [x] max
-- [x] email
 - [x] oneOf
+- [] email
 - [] matches
 - [] equals
 - [] custom
@@ -48,3 +48,16 @@ Alters the current data.
 
 - [x] transform
 - [x] trim
+
+### Error
+
+ValidationError.
+
+- [] Add formatter which is used on objects.
+    - [] Should properly format based on path.
+
+### Types
+
+Typing system of the schema.
+
+- [] Improve typing system
