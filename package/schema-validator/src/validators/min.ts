@@ -1,7 +1,7 @@
 import { ValidationError } from "../error"
 import { OptionsInfo } from "../types"
 
-export function min<TInput extends number | string | any[]>(min: number, message?: string) {
+export function min<TInput extends number | string | unknown[]>(min: number, message?: string) {
   return (input: TInput, info: OptionsInfo) => {
     if (typeof input === "number") {
       if (input < min) {

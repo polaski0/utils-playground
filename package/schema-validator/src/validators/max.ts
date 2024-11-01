@@ -1,7 +1,7 @@
 import { ValidationError } from "../error"
 import { OptionsInfo } from "../types"
 
-export function max<TInput extends number | string | any[]>(max: number, message?: string) {
+export function max<TInput extends number | string | unknown[]>(max: number, message?: string) {
   return (input: TInput, info: OptionsInfo) => {
     if (typeof input === "number") {
       if (input > max) {

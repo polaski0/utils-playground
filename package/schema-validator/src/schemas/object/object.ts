@@ -19,7 +19,9 @@
 // caused an error.
 
 import { Issue, ValidationError } from "../../error";
-import { BaseSchema, Output } from "../../types";
+import { applyOptions } from "../../methods/applyOptions";
+import { parseArgs } from "../../methods/parseArgs";
+import { BaseSchema, Options, Output } from "../../types";
 
 type ObjectShape = Record<string, BaseSchema>
 
@@ -48,12 +50,14 @@ export type ObjectSchema<
   */
 export function object<TSchema extends ObjectShape>(
   schema: TSchema,
-  message?: string,
+  arg2?: string | Options<TSchema>,
+  arg3?: Options<TSchema>
 ): ObjectSchema<TSchema> {
+  const { message, opts } = parseArgs(arg2, arg3)
   return {
     parse(input, info) {
       const issues: Issue[] = []
-      const output = {} as any; // Fix `any` type
+      const output = {} as TSchema
 
       // Should be controlled by a flag such as `abortEarly`
       // to determine if it will continue to validate values
@@ -79,7 +83,7 @@ export function object<TSchema extends ObjectShape>(
         // the object before accessing to prevent errors being thrown when
         // accessing undefined values
         let _val: unknown
-        if (input && key in (input as Record<string, any>)) {
+        if (input && key in (input as Record<string, unknown>)) {
           _val = (input as Record<string | number | symbol, unknown>)[key]
         } else {
           _val = undefined
@@ -102,7 +106,7 @@ export function object<TSchema extends ObjectShape>(
         throw new ValidationError(issues)
       }
 
-      return output
+      return applyOptions(output, opts, { ...info, type: "array" })
     }
   }
 }
