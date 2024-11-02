@@ -30,7 +30,8 @@ export type FormattedError<T> = {
 }
 
 // Convert based on the existing path.
-export function format<TSchema>(error: ValidationError): FormattedError<TSchema> {
+// This is only used for object schema.
+export function format<TSchema extends Record<string, unknown>>(error: ValidationError): FormattedError<TSchema> {
   const issues = error.issues
   const output = {} as FormattedError<TSchema>
 
@@ -61,8 +62,6 @@ export function format<TSchema>(error: ValidationError): FormattedError<TSchema>
           })
         }
       }
-    } else {
-      // Create formatting support for non-object schemas.
     }
   }
 

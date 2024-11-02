@@ -6,7 +6,7 @@ import { max } from "./validators/max"
 import { min } from "./validators/min"
 import { transform } from "./transformers/transform"
 import { parse } from "./methods/parse"
-import { ValidationError, format } from "./error"
+import { FormattedError, ValidationError, format } from "./error"
 import { email } from "./validators/email"
 import { oneOf } from "./validators/oneOf"
 import { array } from "./schemas/array/array"
@@ -15,8 +15,8 @@ import { Infer } from "./types"
 describe("error", () => {
   it("should properly display necessary errors based on its path", () => {
     const schema = object({
-      username: string(
-        "Invalid username.",
+      email: string(
+        "Invalid email.",
         [
           trim(),
           email(),
@@ -41,6 +41,8 @@ describe("error", () => {
       roles: array(
         string([
           oneOf(["user", "admin"]),
+          min(4),
+          max(5),
         ]),
         [
           min(1, "Should have at least one role.")
@@ -49,25 +51,89 @@ describe("error", () => {
     })
 
     type TSchema = Infer<typeof schema>
+    let errors: FormattedError<TSchema> | undefined = undefined
 
     try {
       parse(schema, {
         roles: ["", "customer"]
       })
     } catch (err) {
-      const errors = format<TSchema>((err as ValidationError))
-      console.log(errors)
+      errors = format<TSchema>((err as ValidationError))
     }
-  })
 
-  it("should properly display errors on schemas without paths", () => {
-    const schema = string([min(1), oneOf(["h", "e", "l", "o",])])
-    type TSchema = Infer<typeof schema>
-    try {
-      parse(schema, "")
-    } catch (err) {
-      const errors = format<TSchema>((err as ValidationError))
-      console.log(errors)
+    const expected = {
+      email: {
+        issues: [
+          {
+            type: "string",
+            input: undefined,
+            message: "Invalid email."
+          }
+        ]
+      },
+      password: {
+        issues: [
+          {
+            type: "string",
+            input: undefined,
+            message: "Invalid password."
+          }
+        ]
+      },
+      address: {
+        issues: [
+          {
+            type: "object",
+            input: undefined,
+            message: "Invalid type"
+          }
+        ],
+        zipCode: {
+          issues: [
+            {
+              type: "number",
+              input: undefined,
+              message: "Invalid type"
+            }
+          ]
+        },
+        street: {
+          issues: [
+            {
+              type: "string",
+              input: undefined,
+              message: "Invalid type"
+            }
+          ]
+        },
+      },
+      roles: {
+        issues: [
+          {
+            type: 'string',
+            message: '"" is not included on the selections: "user", "admin".',
+            input: ''
+          },
+          {
+            type: 'string',
+            message: 'Must have a minimum length of 4',
+            input: ''
+          },
+          {
+            type: 'string',
+            message: '"customer" is not included on the selections: "user", "admin".',
+            input: 'customer'
+          },
+          {
+            type: 'string',
+            message: 'Must have a maximum length of 5',
+            input: 'customer'
+          }
+        ]
+      }
     }
+
+    expect(errors).not.toBeUndefined()
+    expect(errors).toEqual(expected)
   })
 })
