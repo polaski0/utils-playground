@@ -23,10 +23,16 @@ export class ValidationError extends Error {
   }
 }
 
+export type FormattedError<T> = {
+  [K in keyof T]: {
+    issues: Pick<Issue, "type" | "input" | "message">[]
+  } & FormattedError<T[K]>
+}
+
 // Convert based on the existing path.
-export function format(error: ValidationError) {
+export function format<TSchema>(error: ValidationError): FormattedError<TSchema> {
   const issues = error.issues
-  const output = {} as Record<string, any>
+  const output = {} as FormattedError<TSchema>
 
   for (const idx in issues) {
     const path = issues[idx].path
@@ -36,16 +42,27 @@ export function format(error: ValidationError) {
       const keys = path.split(".")
 
       for (let i = 0; i < keys.length; i++) {
+        const key = keys[i] as keyof TSchema
         if (i !== keys.length - 1) {
-          current = current[keys[i]]
+          current = current[key] as FormattedError<TSchema>
         } else {
-          current[keys[i]] = issues[idx]
+          if (!current[key]) {
+            current[key] = {
+              issues: []
+            } as {
+              issues: Pick<Issue, "type" | "input" | "message">[];
+            } & FormattedError<TSchema[keyof TSchema]>
+          }
+
+          current[key].issues.push({
+            type: issues[idx].type,
+            message: issues[idx].message,
+            input: issues[idx].input,
+          })
         }
       }
     } else {
-      // Fix format statement for non-object schema or
-      // errors without a `path`
-      break
+      // Create formatting support for non-object schemas.
     }
   }
 

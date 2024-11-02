@@ -10,6 +10,7 @@ import { ValidationError, format } from "./error"
 import { email } from "./validators/email"
 import { oneOf } from "./validators/oneOf"
 import { array } from "./schemas/array/array"
+import { Infer } from "./types"
 
 describe("error", () => {
   it("should properly display necessary errors based on its path", () => {
@@ -47,20 +48,26 @@ describe("error", () => {
       )
     })
 
+    type TSchema = Infer<typeof schema>
+
     try {
       parse(schema, {
         roles: ["", "customer"]
-        // roles: []
       })
     } catch (err) {
-      format((err as ValidationError))
+      const errors = format<TSchema>((err as ValidationError))
+      console.log(errors)
     }
+  })
 
+  it("should properly display errors on schemas without paths", () => {
+    const schema = string([min(1), oneOf(["h", "e", "l", "o",])])
+    type TSchema = Infer<typeof schema>
     try {
-      const schema = string([min(1), oneOf(["h", "e", "l", "o",])])
       parse(schema, "")
     } catch (err) {
-      console.log(format((err as ValidationError)))
+      const errors = format<TSchema>((err as ValidationError))
+      console.log(errors)
     }
   })
 })
