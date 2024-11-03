@@ -6,6 +6,22 @@ export type SchemaType =
   | "date"
   | "boolean"
 
+type ObjectPath = {
+  type: "object"
+  parent: string // Parent path
+  key: string
+}
+
+type ArrayPath = {
+  type: "array"
+  parent: string // Parent path
+  index: number
+}
+
+type PathError =
+  | ObjectPath
+  | ArrayPath
+
 export type Issue = {
   type: SchemaType
   message: string

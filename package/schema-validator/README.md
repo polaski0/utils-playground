@@ -53,8 +53,24 @@ Alters the current data.
 
 ValidationError.
 
-- [] Add formatter which is used on objects.
-    - [] Should properly format based on path.
+- [x] Add formatter which is used on objects.
+    - [x] Should properly format based on path.
+- [] Fix context of `object` and `array` schema
+wherein the `path` will provide a meaningful context.
+    - [] object
+        - [] type
+            - Identifier for `object` path
+        - [] parent
+            - The parent path before reaching the `key`
+        - [] key
+            - Exact key that caused a parsing error
+    - [] array
+        - [] type
+            - Identifier for `array` path
+        - [] parent
+            - The parent path before reaching the `index`
+        - [] index
+            - Exact position that caused a parsing error
 
 ### Types
 
