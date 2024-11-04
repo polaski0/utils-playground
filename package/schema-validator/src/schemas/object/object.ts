@@ -29,84 +29,84 @@ type ObjectShape = Record<string, BaseSchema>
 // additional type operators for a cleaner look.
 type Is<T> = T
 type Mapper<T> = Is<{
-  [K in keyof T]: T[K]
+    [K in keyof T]: T[K]
 }>
 
 type ObjectOutput<TInput extends ObjectShape> =
-  Mapper<{
-    [K in keyof TInput]: Output<TInput[K]>
-  }>
+    Mapper<{
+        [K in keyof TInput]: Output<TInput[K]>
+    }>
 
 export type ObjectSchema<
-  TInput extends ObjectShape,
-  TOutput = ObjectOutput<TInput>
+    TInput extends ObjectShape,
+    TOutput = ObjectOutput<TInput>
 > = BaseSchema<
-  TInput,
-  TOutput
+    TInput,
+    TOutput
 >
 
 /**
   * Creates an object validation schema
   */
 export function object<TSchema extends ObjectShape>(
-  schema: TSchema,
-  arg2?: string | Options<TSchema>,
-  arg3?: Options<TSchema>
+    schema: TSchema,
+    arg2?: string | Options<TSchema>,
+    arg3?: Options<TSchema>
 ): ObjectSchema<TSchema> {
-  const { message, opts } = parseArgs(arg2, arg3)
-  return {
-    parse(input, info) {
-      const issues: Issue[] = []
-      const output = {} as TSchema
+    const { message, opts } = parseArgs(arg2, arg3)
+    return {
+        parse(input, info) {
+            const issues: Issue[] = []
+            const output = {} as Record<keyof TSchema, unknown>
 
-      // Should be controlled by a flag such as `abortEarly`
-      // to determine if it will continue to validate values
-      // nested deeper.
-      if (
-        typeof input !== "object" ||
-        input instanceof Array ||
-        input === undefined ||
-        input === null
-      ) {
-        issues.push({
-          type: "object",
-          message: message || "Invalid type",
-          path: info?.path, // Fix path
-          input: input
-        })
-      }
+            // Should be controlled by a flag such as `abortEarly`
+            // to determine if it will continue to validate values
+            // nested deeper.
+            if (
+                typeof input !== "object" ||
+                input instanceof Array ||
+                input === undefined ||
+                input === null
+            ) {
+                issues.push({
+                    type: "object",
+                    message: message || "Invalid type",
+                    path: info?.path, // Fix path
+                    input: input
+                })
+            }
 
-      for (const key in schema) {
-        const _s = schema[key]
+            for (const key in schema) {
+                const _s = schema[key]
 
-        // Checks if the input is not undefined and that the key exists in
-        // the object before accessing to prevent errors being thrown when
-        // accessing undefined values
-        let _val: unknown
-        if (input && key in (input as Record<string, unknown>)) {
-          _val = (input as Record<string | number | symbol, unknown>)[key]
-        } else {
-          _val = undefined
+                // Checks if the input is not undefined and that the key exists in
+                // the object before accessing to prevent errors being thrown when
+                // accessing undefined values
+                let _val: unknown
+                if (input && key in (input as Record<string, unknown>)) {
+                    _val = (input as Record<string | number | symbol, unknown>)[key]
+                } else {
+                    _val = undefined
+                }
+
+                try {
+                    const parsedValue = _s.parse(_val, {
+                        ...info,
+                        input: _val,
+                        path: info?.path ? `${info?.path}.${key}` : key, // Fix path builder
+                    })
+
+                    output[key] = parsedValue
+                } catch (error) {
+                    issues.push(...(error as ValidationError).issues)
+                }
+            }
+
+            if (issues.length) {
+                throw new ValidationError(issues)
+            }
+
+            return applyOptions(output as TSchema, opts, { ...info, type: "array" })
         }
-
-        try {
-          const parsedValue = _s.parse(_val, {
-            ...info,
-            input: _val,
-            path: info?.path ? `${info?.path}.${key}` : key, // Fix path builder
-          })
-
-          output[key] = parsedValue
-        } catch (error) {
-          issues.push(...(error as ValidationError).issues)
-        }
-      }
-
-      if (issues.length) {
-        throw new ValidationError(issues)
-      }
-
-      return applyOptions(output, opts, { ...info, type: "array" })
     }
-  }
 }
