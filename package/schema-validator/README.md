@@ -30,6 +30,15 @@ Modifiers.
 - [x] optional
 - [x] nullable
 
+### Conditionals
+
+Conditionals.
+
+- [] or
+- [] and
+- [] if
+- [] not (?)
+
 ### Validators
 
 Validators.

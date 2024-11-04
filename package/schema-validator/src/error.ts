@@ -52,6 +52,7 @@ export function format<TSchema extends Record<string, unknown>>(error: Validatio
   const output = {} as FormattedError<TSchema>
 
   for (const idx in issues) {
+      console.log(issues[idx])
     const path = issues[idx].path
     let current = output
 
